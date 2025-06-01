@@ -1,13 +1,14 @@
 #version 330 core
 
 in vec3 vColor;
-in vec3 vNormal;      // 頂點的法向量 (N)
-in vec3 vLight;       // 頂點指向光源的 Light(L) 向量
-in vec3 vView;        // 頂點指向 view 的 view(V) 向量
+in vec3 vNormal;
+in vec3 vLight;
+in vec3 vView;
 in vec3 v3Pos;
+in vec2 vTexCoord;
 
-uniform int  uShadingMode;     // 1=頂點色, 2=物件色, 3=Per-Pixel
-uniform vec4 ui4Color;         // 模型顏色
+uniform int  uShadingMode;
+uniform vec4 ui4Color;
 
 struct LightSource {
     vec3 position;
@@ -17,7 +18,7 @@ struct LightSource {
     float constant;
     float linear;
     float quadratic;
-    // 若有 Spot Light，可加以下
+    // Spot Light
     vec3 direction;
     float cutOff;
     float outerCutOff;
@@ -30,31 +31,51 @@ struct Material {
     vec4 diffuse;   // kd
     vec4 specular;  // ks
     float shininess;
+    
+    sampler2D diffuseTexture;
+    sampler2D normalTexture;
+    sampler2D specularTexture;
+    
+    bool hasDiffuseTexture;
+    bool hasNormalTexture;
+    bool hasSpecularTexture;
 };
 uniform Material uMaterial;
 out vec4 FragColor;
 
 void main() {
-    // 模式切換：1 = 頂點顏色、2 = 模型顏色，3 = Per Pixel Lighting
+
     if( uShadingMode == 1) { FragColor = vec4(vColor, 1.0);  return; }
     if( uShadingMode == 2 ){ FragColor = ui4Color; return; }
 
-    // 3 = Per-Pixel Phong
+    // 3 = Per-Pixel Phong with Textures
     vec3 N = normalize(vNormal);
     vec3 L = normalize(vLight);
     vec3 V = normalize(vView);
     vec3 R = reflect(-L, N);
+    
+    vec4 texDiffuse = vec4(1.0);
+    vec4 texSpecular = vec4(1.0);
+    
+    if(uMaterial.hasDiffuseTexture) {
+        texDiffuse = texture(uMaterial.diffuseTexture, vTexCoord);
+        if(texDiffuse.a < 0.01) texDiffuse = vec4(1.0);
+    }
+    
+    if(uMaterial.hasSpecularTexture) {
+        texSpecular = texture(uMaterial.specularTexture, vTexCoord);
+    }
 
     // Ambient
-    vec4 ambient = uLight.ambient * uMaterial.ambient;
+    vec4 ambient = uLight.ambient * uMaterial.ambient * texDiffuse;
 
     // Diffuse
     float diff = max(dot(N, L), 0.0);
-    vec4 diffuse = uLight.diffuse * diff * uMaterial.diffuse;
+    vec4 diffuse = uLight.diffuse * diff * uMaterial.diffuse * texDiffuse;
 
     // Specular
     float spec = pow(max(dot(R, V), 0.0), uMaterial.shininess);
-    vec4 specular = uLight.specular * spec * uMaterial.specular;
+    vec4 specular = uLight.specular * spec * uMaterial.specular * texDiffuse;
 
     // Attenuation
     float dist = length(uLight.position - v3Pos);
@@ -62,7 +83,7 @@ void main() {
                        + uLight.linear   * dist
                        + uLight.quadratic* dist * dist);
 
-    // Spot Light 漸變（如有設定 cutOff > 0）
+    
     if(uLight.cutOff > 0.0) {
         float theta = dot(L, normalize(-uLight.direction));
         float intensity = clamp(

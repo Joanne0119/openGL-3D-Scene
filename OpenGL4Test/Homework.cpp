@@ -45,6 +45,12 @@
 #include "models/CBox.h"
 #include "models/CSphere.h"
 
+//#include "common/OBJLoader.h"
+//#include "common/ModelManager.h"
+//#include "common/ModelLoader.h"
+#include "Model.h"
+
+
 #include "common/CLight.h"
 #include "common/CMaterial.h"
 
@@ -64,6 +70,9 @@ CCube g_centerloc; // view center預設在 (0,0,0)，不做任何描繪操作
 CQuad g_floor[ROW_NUM][ROW_NUM]; 
 
 GLuint g_shadingProg;
+GLuint g_objShadingProg;
+GLuint g_modelVAO;
+int g_modelVertexCount;
 
 // 全域光源 (位置在 5,5,0)
 CLight g_light(glm::vec3(5.0f, 5.0f, 0.0f));
@@ -78,13 +87,26 @@ CMaterial g_matWoodHoney;
 CMaterial g_matWoodLightOak;
 CMaterial g_matWoodBleached;
 
+//ModelManager g_modelManager;
+//ModelLoader model;
+//Model myModel;
+std::vector<std::unique_ptr<Model>> models;
+
+std::vector<std::string> modelPaths = {
+    "models/woodCube.obj",
+    "models/Elephant_Toy.obj"
+};
+
 void genMaterial();
+void renderModel(const std::string& modelName, const glm::mat4& modelMatrix);
 
 //----------------------------------------------------------------------------
 void loadScene(void)
 {
     genMaterial();
     g_shadingProg = CShaderPool::getInstance().getShader("v_phong.glsl", "f_phong.glsl");
+//    g_objShadingProg = CShaderPool::getInstance().getShader("v_obj.glsl", "f_obj.glsl");
+    
     g_light.setShaderID(g_shadingProg, "uLight");
     //g_light.setTarget(glm::vec3(0, 2, 0));
     //g_light.setCutOffDeg(20.0f, 90.0f);
@@ -117,7 +139,7 @@ void loadScene(void)
     g_teapot.setPos(glm::vec3(-3.0f, 0.0005f, -3.0f));
     g_teapot.setRotate(45, glm::vec3(0, 1, 0));
     g_teapot.setMaterial(g_matWaterGreen);
-
+    
     g_tknot.setupVertexAttributes();
     g_tknot.setShaderID(g_shadingProg, 3);
     g_tknot.setScale(glm::vec3(0.4f, 0.4f, 0.4f));
@@ -129,6 +151,18 @@ void loadScene(void)
     g_house.setScale(glm::vec3(30.0f, 12.0f, 30.0f));
     g_house.setPos(glm::vec3(0.0f, 5.95f, 0.0f));
     g_house.setMaterial(g_matWoodBleached);
+    
+    // 載入模型 - 只需要傳入模型路徑！
+    for (const auto& path : modelPaths) {
+        auto model = std::make_unique<Model>();
+        if (model->LoadModel(path)) {
+            models.push_back(std::move(model));
+            std::cout << "Successfully loaded: " << path << std::endl;
+        } else {
+            std::cout << "Failed to load: " << path << std::endl;
+        }
+    }
+   
 
 	CCamera::getInstance().updateView(g_eyeloc); // 設定 eye 位置
     CCamera::getInstance().updateCenter(glm::vec3(0,4,0));
@@ -173,6 +207,32 @@ void render(void)
 
     g_house.uploadMaterial();
     g_house.drawRaw();
+    
+//    glUseProgram(g_objShadingProg);
+    //繪製obj model
+    glm::mat4 modelMatrix = glm::mat4(1.0f);
+    modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 1.0f, 0.0f));
+    modelMatrix = glm::scale(modelMatrix, glm::vec3(0.5f));
+
+    GLint modelLoc = glGetUniformLocation(g_shadingProg, "mxModel");
+    if (modelLoc != -1) {
+        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(modelMatrix));
+        std::cout << "  Set mxModel uniform" << std::endl;
+    } else {
+        std::cerr << "  mxModel uniform not found!" << std::endl;
+    }
+
+    std::cout << "Calling myModel.Render(g_objShadingProg)..." << std::endl;
+    for (auto& model : models) {
+         model->Render(g_shadingProg);
+     }
+    std::cout << "myModel.Render() finished" << std::endl;
+
+    // 檢查 OpenGL 錯誤 (after rendering)
+    GLenum error = glGetError();
+    if (error != GL_NO_ERROR) {
+        std::cerr << "OpenGL error in render(): " << error << std::endl;
+    }
 }
 //----------------------------------------------------------------------------
 
@@ -183,7 +243,7 @@ void update(float dt)
 
 void releaseAll()
 {
-
+//    g_modelManager.cleanup();
 }
 
 int main() {
@@ -228,6 +288,7 @@ int main() {
 
     // 呼叫 loadScene() 建立與載入 GPU 進行描繪的幾何資料 
     loadScene();
+
 
     float lastTime = (float)glfwGetTime();
     while (!glfwWindowShouldClose(window)) {

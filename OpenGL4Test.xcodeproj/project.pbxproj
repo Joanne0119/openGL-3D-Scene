@@ -33,6 +33,9 @@
 		F57450EF2DE73E4600155FE2 /* arcball.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F57450D62DE73E4600155FE2 /* arcball.cpp */; };
 		F57450F02DE73E4600155FE2 /* CSprite2D.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F57450E22DE73E4600155FE2 /* CSprite2D.cpp */; };
 		F57450F12DE73E4600155FE2 /* CButton.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F57450D82DE73E4600155FE2 /* CButton.cpp */; };
+		F5CA4C172DEB892A00C76F85 /* stb_image_aug.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CA4C162DEB891C00C76F85 /* stb_image_aug.cpp */; };
+		F5CA4C252DEC2ED100C76F85 /* tiny_obj_loader.cc in Sources */ = {isa = PBXBuildFile; fileRef = F5CA4C242DEC2ED100C76F85 /* tiny_obj_loader.cc */; };
+		F5CA4C2B2DEC356700C76F85 /* Model.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CA4C2A2DEC356600C76F85 /* Model.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -104,6 +107,25 @@
 		F57450E52DE73E4600155FE2 /* typedefs.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = typedefs.h; sourceTree = "<group>"; };
 		F57450E62DE73E4600155FE2 /* wmhandler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = wmhandler.h; sourceTree = "<group>"; };
 		F57450E72DE73E4600155FE2 /* wmhandler.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = wmhandler.cpp; sourceTree = "<group>"; };
+		F57451012DEB297000155FE2 /* Transform.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Transform.h; sourceTree = "<group>"; };
+		F574512D2DEB7E4400155FE2 /* Elephant_Toy.mtl */ = {isa = PBXFileReference; lastKnownFileType = text; path = Elephant_Toy.mtl; sourceTree = "<group>"; };
+		F574512E2DEB7E4400155FE2 /* elephant_toy_color.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = elephant_toy_color.png; sourceTree = "<group>"; };
+		F574512F2DEB7E4400155FE2 /* elephant_toy_normal.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = elephant_toy_normal.png; sourceTree = "<group>"; };
+		F57451302DEB7E4400155FE2 /* elephant_toy_roughness.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = elephant_toy_roughness.png; sourceTree = "<group>"; };
+		F57451322DEB7F0300155FE2 /* Elephant_Toy.obj */ = {isa = PBXFileReference; lastKnownFileType = text; path = Elephant_Toy.obj; sourceTree = "<group>"; };
+		F5CA4C162DEB891C00C76F85 /* stb_image_aug.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = stb_image_aug.cpp; sourceTree = "<group>"; };
+		F5CA4C1A2DEC20C400C76F85 /* WoodFloor062_1K-JPG_Color.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "WoodFloor062_1K-JPG_Color.jpg"; sourceTree = "<group>"; };
+		F5CA4C1B2DEC20C400C76F85 /* WoodFloor062_1K-JPG_NormalGL.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "WoodFloor062_1K-JPG_NormalGL.jpg"; sourceTree = "<group>"; };
+		F5CA4C1C2DEC20C400C76F85 /* WoodFloor062_1K-JPG_Roughness.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "WoodFloor062_1K-JPG_Roughness.jpg"; sourceTree = "<group>"; };
+		F5CA4C1D2DEC215A00C76F85 /* stb_image.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = stb_image.h; sourceTree = "<group>"; };
+		F5CA4C1E2DEC233000C76F85 /* woodCube.mtl */ = {isa = PBXFileReference; lastKnownFileType = text; path = woodCube.mtl; sourceTree = "<group>"; };
+		F5CA4C1F2DEC233000C76F85 /* woodCube.obj */ = {isa = PBXFileReference; lastKnownFileType = text; path = woodCube.obj; sourceTree = "<group>"; };
+		F5CA4C232DEC2ED100C76F85 /* tiny_obj_loader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = tiny_obj_loader.h; sourceTree = "<group>"; };
+		F5CA4C242DEC2ED100C76F85 /* tiny_obj_loader.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = tiny_obj_loader.cc; sourceTree = "<group>"; };
+		F5CA4C292DEC354C00C76F85 /* Model.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Model.h; sourceTree = "<group>"; };
+		F5CA4C2A2DEC356600C76F85 /* Model.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Model.cpp; sourceTree = "<group>"; };
+		F5CA4C2C2DEC4ADB00C76F85 /* f_obj.glsl */ = {isa = PBXFileReference; lastKnownFileType = text; path = f_obj.glsl; sourceTree = "<group>"; };
+		F5CA4C2D2DEC4AFC00C76F85 /* v_obj.glsl */ = {isa = PBXFileReference; lastKnownFileType = text; path = v_obj.glsl; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -152,8 +174,13 @@
 		F516652D2DD46DBB00C50D34 /* models */ = {
 			isa = PBXGroup;
 			children = (
-				F51665152DD46DBB00C50D34 /* CBottle.h */,
+				F57451312DEB7E4400155FE2 /* textures */,
+				F5CA4C1E2DEC233000C76F85 /* woodCube.mtl */,
+				F5CA4C1F2DEC233000C76F85 /* woodCube.obj */,
+				F574512D2DEB7E4400155FE2 /* Elephant_Toy.mtl */,
+				F57451322DEB7F0300155FE2 /* Elephant_Toy.obj */,
 				F51665162DD46DBB00C50D34 /* CBottle.cpp */,
+				F51665152DD46DBB00C50D34 /* CBottle.h */,
 				F51665172DD46DBB00C50D34 /* CBox.h */,
 				F51665182DD46DBB00C50D34 /* CBox.cpp */,
 				F51665192DD46DBB00C50D34 /* CCapsule.h */,
@@ -183,14 +210,20 @@
 		F51665392DD46DBB00C50D34 /* OpenGL4Test */ = {
 			isa = PBXGroup;
 			children = (
+				F5CA4C232DEC2ED100C76F85 /* tiny_obj_loader.h */,
+				F5CA4C242DEC2ED100C76F85 /* tiny_obj_loader.cc */,
+				F5CA4C1D2DEC215A00C76F85 /* stb_image.h */,
+				F5CA4C162DEB891C00C76F85 /* stb_image_aug.cpp */,
 				F57450E82DE73E4600155FE2 /* common */,
 				F51665612DD47C4700C50D34 /* Homework.cpp */,
 				F516652D2DD46DBB00C50D34 /* models */,
 				F51665322DD46DBB00C50D34 /* f_gouraud.glsl */,
 				F51665332DD46DBB00C50D34 /* f_npr.glsl */,
 				F51665342DD46DBB00C50D34 /* f_phong.glsl */,
+				F5CA4C2C2DEC4ADB00C76F85 /* f_obj.glsl */,
 				F51665352DD46DBB00C50D34 /* OpenGL4Test.entitlements */,
 				F51665362DD46DBB00C50D34 /* v_gouraud.glsl */,
+				F5CA4C2D2DEC4AFC00C76F85 /* v_obj.glsl */,
 				F51665372DD46DBB00C50D34 /* v_npr.glsl */,
 				F51665382DD46DBB00C50D34 /* v_phong.glsl */,
 			);
@@ -200,6 +233,8 @@
 		F57450E82DE73E4600155FE2 /* common */ = {
 			isa = PBXGroup;
 			children = (
+				F5CA4C292DEC354C00C76F85 /* Model.h */,
+				F5CA4C2A2DEC356600C76F85 /* Model.cpp */,
 				F57450D52DE73E4600155FE2 /* arcball.h */,
 				F57450D62DE73E4600155FE2 /* arcball.cpp */,
 				F57450D72DE73E4600155FE2 /* CButton.h */,
@@ -212,8 +247,9 @@
 				F57450DE2DE73E4600155FE2 /* CMaterial.cpp */,
 				F57450DF2DE73E4600155FE2 /* CShaderPool.h */,
 				F57450E02DE73E4600155FE2 /* CShaderPool.cpp */,
-				F57450E12DE73E4600155FE2 /* CSprite2D.h */,
 				F57450E22DE73E4600155FE2 /* CSprite2D.cpp */,
+				F57450E12DE73E4600155FE2 /* CSprite2D.h */,
+				F57451012DEB297000155FE2 /* Transform.h */,
 				F57450E32DE73E4600155FE2 /* initshader.h */,
 				F57450E42DE73E4600155FE2 /* initShader.cpp */,
 				F57450E52DE73E4600155FE2 /* typedefs.h */,
@@ -221,6 +257,19 @@
 				F57450E72DE73E4600155FE2 /* wmhandler.cpp */,
 			);
 			path = common;
+			sourceTree = "<group>";
+		};
+		F57451312DEB7E4400155FE2 /* textures */ = {
+			isa = PBXGroup;
+			children = (
+				F5CA4C1A2DEC20C400C76F85 /* WoodFloor062_1K-JPG_Color.jpg */,
+				F5CA4C1B2DEC20C400C76F85 /* WoodFloor062_1K-JPG_NormalGL.jpg */,
+				F5CA4C1C2DEC20C400C76F85 /* WoodFloor062_1K-JPG_Roughness.jpg */,
+				F574512E2DEB7E4400155FE2 /* elephant_toy_color.png */,
+				F574512F2DEB7E4400155FE2 /* elephant_toy_normal.png */,
+				F57451302DEB7E4400155FE2 /* elephant_toy_roughness.png */,
+			);
+			path = textures;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -256,6 +305,7 @@
 				TargetAttributes = {
 					F516649C2DD46C7F00C50D34 = {
 						CreatedOnToolsVersion = 16.3;
+						LastSwiftMigration = 1630;
 					};
 				};
 			};
@@ -283,7 +333,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F5CA4C172DEB892A00C76F85 /* stb_image_aug.cpp in Sources */,
 				F57450E92DE73E4600155FE2 /* CCamera.cpp in Sources */,
+				F5CA4C2B2DEC356700C76F85 /* Model.cpp in Sources */,
 				F57450EA2DE73E4600155FE2 /* CLight.cpp in Sources */,
 				F57450EB2DE73E4600155FE2 /* wmhandler.cpp in Sources */,
 				F57450EC2DE73E4600155FE2 /* CMaterial.cpp in Sources */,
@@ -293,6 +345,7 @@
 				F57450F02DE73E4600155FE2 /* CSprite2D.cpp in Sources */,
 				F57450F12DE73E4600155FE2 /* CButton.cpp in Sources */,
 				F51665622DD47C4700C50D34 /* Homework.cpp in Sources */,
+				F5CA4C252DEC2ED100C76F85 /* tiny_obj_loader.cc in Sources */,
 				F51665432DD46DBB00C50D34 /* CBottle.cpp in Sources */,
 				F51665442DD46DBB00C50D34 /* CBox.cpp in Sources */,
 				F51665452DD46DBB00C50D34 /* CCapsule.cpp in Sources */,
@@ -431,6 +484,7 @@
 		F51664A52DD46C7F00C50D34 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = OpenGL4Test/OpenGL4Test.entitlements;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
@@ -448,12 +502,15 @@
 					/opt/homebrew/Cellar/glm/1.0.1/lib,
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 6.0;
 			};
 			name = Debug;
 		};
 		F51664A62DD46C7F00C50D34 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = OpenGL4Test/OpenGL4Test.entitlements;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
@@ -471,6 +528,7 @@
 					/opt/homebrew/Cellar/glm/1.0.1/lib,
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 6.0;
 			};
 			name = Release;
 		};

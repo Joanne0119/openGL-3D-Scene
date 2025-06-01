@@ -5,8 +5,6 @@
 #include <cmath>
 #include "../common/typedefs.h"
 
-// 預設輪廓：{ radius, height }，模擬可樂瓶外型
-
 
 CBottle::CBottle(unsigned int radialSegs, unsigned int heightSegs, GLuint pattern)
     : CShape() {

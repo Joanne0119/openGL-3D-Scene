@@ -140,8 +140,6 @@ void Model::ProcessMesh(const tinyobj::attrib_t& attrib,
             if (index.texcoord_index >= 0) {
                 vertex.texCoords[0] = attrib.texcoords[2 * index.texcoord_index + 0];
                 vertex.texCoords[1] = attrib.texcoords[2 * index.texcoord_index + 1];
-
-                std::cout << "    Vertex " << i << " TexCoord: (" << vertex.texCoords[0] << ", " << vertex.texCoords[1] << ")" << std::endl;  // 輸出紋理坐標
             } else {
                 std::cerr << "    Warning: TexCoord index is negative or missing!" << std::endl;
                 vertex.texCoords[0] = 0.0f;
@@ -158,10 +156,6 @@ void Model::ProcessMesh(const tinyobj::attrib_t& attrib,
                 uniqueVertices[vertexKey] = static_cast<unsigned int>(mesh.vertices.size());
                 mesh.vertices.push_back(vertex);
 
-                // 輸出頂點位置 (僅輸出第一個頂點，避免過多訊息)
-                if (i == 0) {
-                    std::cout << "    Vertex Position: (" << vertex.position[0] << ", " << vertex.position[1] << ", " << vertex.position[2] << ")" << std::endl;
-                }
             }
 
             mesh.indices.push_back(uniqueVertices[vertexKey]);
@@ -365,28 +359,24 @@ void Model::Render(GLuint shaderProgram) {
 
             if (ambientLoc != -1) {
                 glUniform4f(ambientLoc, material.ambient[0], material.ambient[1], material.ambient[2], 1.0f);
-                std::cout << "    Set uMaterial.ambient" << std::endl;
             } else {
                 std::cerr << "    uMaterial.ambient uniform not found!" << std::endl;
             }
 
             if (diffuseLoc != -1) {
                 glUniform4f(diffuseLoc, material.diffuse[0], material.diffuse[1], material.diffuse[2], 1.0f);
-                std::cout << "    Set uMaterial.diffuse" << std::endl;
             } else {
                 std::cerr << "    uMaterial.diffuse uniform not found!" << std::endl;
             }
 
             if (specularLoc != -1) {
                 glUniform4f(specularLoc, material.specular[0], material.specular[1], material.specular[2], 1.0f);
-                std::cout << "    Set uMaterial.specular" << std::endl;
             } else {
                 std::cerr << "    uMaterial.specular uniform not found!" << std::endl;
             }
 
             if (shininessLoc != -1) {
                 glUniform1f(shininessLoc, material.shininess);
-                std::cout << "    Set uMaterial.shininess" << std::endl;
             } else {
                 std::cerr << "    uMaterial.shininess uniform not found!" << std::endl;
             }
@@ -397,7 +387,6 @@ void Model::Render(GLuint shaderProgram) {
                 glBindTexture(GL_TEXTURE_2D, material.diffuseTexture);
                 glUniform1i(glGetUniformLocation(shaderProgram, "uMaterial.diffuseTexture"), 0);
                 glUniform1i(glGetUniformLocation(shaderProgram, "uMaterial.hasDiffuseTexture"), 1); // 重要！
-                std::cout << "    Bound diffuse texture and set uniforms" << std::endl;
             } else {
                 glUniform1i(glGetUniformLocation(shaderProgram, "uMaterial.hasDiffuseTexture"), 0);
                 std::cout << "    No diffuse texture" << std::endl;
@@ -409,7 +398,6 @@ void Model::Render(GLuint shaderProgram) {
                 glBindTexture(GL_TEXTURE_2D, material.normalTexture);
                 glUniform1i(glGetUniformLocation(shaderProgram, "uMaterial.normalTexture"), 1);
                 glUniform1i(glGetUniformLocation(shaderProgram, "uMaterial.hasNormalTexture"), 1);
-                std::cout << "    Bound normal texture and set uniforms" << std::endl;
             } else {
                 glUniform1i(glGetUniformLocation(shaderProgram, "uMaterial.hasNormalTexture"), 0);
                 std::cout << "    No normal texture" << std::endl;
@@ -421,7 +409,6 @@ void Model::Render(GLuint shaderProgram) {
                 glBindTexture(GL_TEXTURE_2D, material.specularTexture);
                 glUniform1i(glGetUniformLocation(shaderProgram, "uMaterial.specularTexture"), 2);
                 glUniform1i(glGetUniformLocation(shaderProgram, "uMaterial.hasSpecularTexture"), 1);
-                std::cout << "    Bound specular texture and set uniforms" << std::endl;
             } else {
                 glUniform1i(glGetUniformLocation(shaderProgram, "uMaterial.hasSpecularTexture"), 0);
                 std::cout << "    No specular texture" << std::endl;

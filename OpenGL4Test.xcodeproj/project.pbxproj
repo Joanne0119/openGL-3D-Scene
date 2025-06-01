@@ -126,6 +126,11 @@
 		F5CA4C2A2DEC356600C76F85 /* Model.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Model.cpp; sourceTree = "<group>"; };
 		F5CA4C2C2DEC4ADB00C76F85 /* f_obj.glsl */ = {isa = PBXFileReference; lastKnownFileType = text; path = f_obj.glsl; sourceTree = "<group>"; };
 		F5CA4C2D2DEC4AFC00C76F85 /* v_obj.glsl */ = {isa = PBXFileReference; lastKnownFileType = text; path = v_obj.glsl; sourceTree = "<group>"; };
+		F5CA4C2E2DEC7ED500C76F85 /* House.mtl */ = {isa = PBXFileReference; lastKnownFileType = text; path = House.mtl; sourceTree = "<group>"; };
+		F5CA4C2F2DEC7ED500C76F85 /* House.obj */ = {isa = PBXFileReference; lastKnownFileType = text; path = House.obj; sourceTree = "<group>"; };
+		F5CA4C362DEC86E200C76F85 /* House_color.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = House_color.png; sourceTree = "<group>"; };
+		F5CA4C372DEC86E200C76F85 /* House_normal.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = House_normal.png; sourceTree = "<group>"; };
+		F5CA4C382DEC86E200C76F85 /* House_roughness.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = House_roughness.png; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -175,6 +180,8 @@
 			isa = PBXGroup;
 			children = (
 				F57451312DEB7E4400155FE2 /* textures */,
+				F5CA4C2E2DEC7ED500C76F85 /* House.mtl */,
+				F5CA4C2F2DEC7ED500C76F85 /* House.obj */,
 				F5CA4C1E2DEC233000C76F85 /* woodCube.mtl */,
 				F5CA4C1F2DEC233000C76F85 /* woodCube.obj */,
 				F574512D2DEB7E4400155FE2 /* Elephant_Toy.mtl */,
@@ -262,6 +269,9 @@
 		F57451312DEB7E4400155FE2 /* textures */ = {
 			isa = PBXGroup;
 			children = (
+				F5CA4C362DEC86E200C76F85 /* House_color.png */,
+				F5CA4C372DEC86E200C76F85 /* House_normal.png */,
+				F5CA4C382DEC86E200C76F85 /* House_roughness.png */,
 				F5CA4C1A2DEC20C400C76F85 /* WoodFloor062_1K-JPG_Color.jpg */,
 				F5CA4C1B2DEC20C400C76F85 /* WoodFloor062_1K-JPG_NormalGL.jpg */,
 				F5CA4C1C2DEC20C400C76F85 /* WoodFloor062_1K-JPG_Roughness.jpg */,

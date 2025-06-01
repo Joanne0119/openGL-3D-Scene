@@ -3,7 +3,7 @@
 //    (3分) 鏡頭方向
 //    (1分) 世界座標方向
 // (3分) 依照需求完成房間的東西放置
-// 房間正中間必須放置一個模型(必須是讀自 Obj 檔)
+// ✓ 房間正中間必須放置一個模型(必須是讀自 Obj 檔)
 // 另外三個 Spot Light 處也必須各至少有一個模型
 // 每一個模型都必須有材質的設定(可以不含貼圖)
 // (3分) 依照需求完成燈光的放置，而且都會照亮環境
@@ -58,10 +58,10 @@
 #define SCREEN_HEIGHT 800 
 #define ROW_NUM 30
 
-CBottle  g_bottle(18, 8, 4);
-CTeapot  g_teapot(5);
+//CBottle  g_bottle(18, 8, 4);
+//CTeapot  g_teapot(5);
 CTorusKnot g_tknot(4);
-CBox g_house;
+//CBox g_house;
 CSphere g_sphere;
 CButton g_button;
 
@@ -75,7 +75,30 @@ GLuint g_modelVAO;
 int g_modelVertexCount;
 
 // 全域光源 (位置在 5,5,0)
-CLight g_light(glm::vec3(5.0f, 5.0f, 0.0f));
+CLight g_light(
+               glm::vec3(3.5f, 5.5f, 0.0f),           // 位置
+               glm::vec4(0.3f, 0.3f, 0.3f, 1.0f),     // 環境光 - 較高比例
+               glm::vec4(0.6f, 0.6f, 0.6f, 1.0f),     // 漫反射 - 中等強度
+               glm::vec4(0.2f, 0.2f, 0.2f, 1.0f),     // 鏡面反射 - 較低
+               1.0f, 0.09f, 0.032f                    // 衰減參數
+           );
+
+CLight mainAmbient(
+    glm::vec3(0.0f, 8.0f, 0.0f),
+    glm::vec4(0.4f, 0.4f, 0.45f, 1.0f),  // 稍微偏冷色調
+    glm::vec4(0.5f, 0.5f, 0.55f, 1.0f),
+    glm::vec4(0.1f, 0.1f, 0.1f, 1.0f),
+    1.0f, 0.027f, 0.0028f
+);
+
+CLight warmFill(
+    glm::vec3(-3.0f, 5.0f, 3.0f),
+    glm::vec4(0.2f, 0.15f, 0.1f, 1.0f),  // 暖色調
+    glm::vec4(0.4f, 0.35f, 0.2f, 1.0f),
+    glm::vec4(0.1f, 0.1f, 0.05f, 1.0f),
+    1.0f, 0.045f, 0.0075f
+);
+
 
 // 全域材質（可依模型分別設定）
 CMaterial g_matBeige;   // 淺米白深麥灰
@@ -91,10 +114,11 @@ CMaterial g_matWoodBleached;
 //ModelLoader model;
 //Model myModel;
 std::vector<std::unique_ptr<Model>> models;
-
+std::vector<glm::mat4> modelMatrices;
 std::vector<std::string> modelPaths = {
     "models/woodCube.obj",
-    "models/Elephant_Toy.obj"
+    "models/Elephant_Toy.obj",
+    "models/House.obj"
 };
 
 void genMaterial();
@@ -108,37 +132,45 @@ void loadScene(void)
 //    g_objShadingProg = CShaderPool::getInstance().getShader("v_obj.glsl", "f_obj.glsl");
     
     g_light.setShaderID(g_shadingProg, "uLight");
+    
+    mainAmbient.setShaderID(g_shadingProg, "uLight");
+    warmFill.setShaderID(g_shadingProg, "uLight");
+    
+    // 調整光照顏色和衰減
+//    g_light.setDiffuse(glm::vec4(0.9f, 0.9f, 0.8f, 1.0f));   // 淡黃色漫射光
+//    g_light.setSpecular(glm::vec4(1.0f, 1.0f, 0.8f, 0.9f));  // 淡黃色鏡面反射光
+//    g_light.setAttenuation(1.0f, 0.15f, 0.032f);           // 調整衰減參數
     //g_light.setTarget(glm::vec3(0, 2, 0));
     //g_light.setCutOffDeg(20.0f, 90.0f);
     //g_light.setCutOffDeg(20.0f, 90.0f, 8.0f);
 
-    int k = 0;
-    for (int i = 0; i < ROW_NUM; i++)
-    {
-        k++;
-        for (int j = 0; j < ROW_NUM; j++) {
-            g_floor[i][j].setupVertexAttributes();
-            g_floor[i][j].setShaderID(g_shadingProg, 3);
-            g_floor[i][j].setPos(glm::vec3((ROW_NUM / 2) - 0.5f - (float)i, 0.0f, (float)j - (ROW_NUM / 2) + 0.5f));
-            g_floor[i][j].setRotate(-90.0f, glm::vec3(1.0f, 0.0f, 0.0f));
-            if (k % 2) g_floor[i][j].setMaterial(g_matBeige);
-            else g_floor[i][j].setMaterial(g_matGray);
-            k++;
-        }
-    }
+//    int k = 0;
+//    for (int i = 0; i < ROW_NUM; i++)
+//    {
+//        k++;
+//        for (int j = 0; j < ROW_NUM; j++) {
+//            g_floor[i][j].setupVertexAttributes();
+//            g_floor[i][j].setShaderID(g_shadingProg, 3);
+//            g_floor[i][j].setPos(glm::vec3((ROW_NUM / 2) - 0.5f - (float)i, 0.0f, (float)j - (ROW_NUM / 2) + 0.5f));
+//            g_floor[i][j].setRotate(-90.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+//            if (k % 2) g_floor[i][j].setMaterial(g_matBeige);
+//            else g_floor[i][j].setMaterial(g_matGray);
+//            k++;
+//        }
+//    }
 
-    g_bottle.setupVertexAttributes();
-    g_bottle.setShaderID(g_shadingProg, 3);
-    g_bottle.setScale(glm::vec3(0.7f, 0.7f, 0.7f));
-    g_bottle.setPos(glm::vec3(2.5f, 0.0005f, 2.5f));
-    g_bottle.setMaterial(g_matWaterBlue);
-
-    g_teapot.setupVertexAttributes();
-    g_teapot.setShaderID(g_shadingProg, 3);
-    g_teapot.setScale(glm::vec3(0.75f, 0.75f, 0.75f));
-    g_teapot.setPos(glm::vec3(-3.0f, 0.0005f, -3.0f));
-    g_teapot.setRotate(45, glm::vec3(0, 1, 0));
-    g_teapot.setMaterial(g_matWaterGreen);
+//    g_bottle.setupVertexAttributes();
+//    g_bottle.setShaderID(g_shadingProg, 3);
+//    g_bottle.setScale(glm::vec3(0.7f, 0.7f, 0.7f));
+//    g_bottle.setPos(glm::vec3(2.5f, 0.0005f, 2.5f));
+//    g_bottle.setMaterial(g_matWaterBlue);
+//
+//    g_teapot.setupVertexAttributes();
+//    g_teapot.setShaderID(g_shadingProg, 3);
+//    g_teapot.setScale(glm::vec3(0.75f, 0.75f, 0.75f));
+//    g_teapot.setPos(glm::vec3(-3.0f, 0.0005f, -3.0f));
+//    g_teapot.setRotate(45, glm::vec3(0, 1, 0));
+//    g_teapot.setMaterial(g_matWaterGreen);
     
     g_tknot.setupVertexAttributes();
     g_tknot.setShaderID(g_shadingProg, 3);
@@ -146,17 +178,18 @@ void loadScene(void)
     g_tknot.setPos(glm::vec3(-2.0f, 0.5f, 2.0f));
     g_tknot.setMaterial(g_matWaterRed);
 
-    g_house.setupVertexAttributes();
-    g_house.setShaderID(g_shadingProg, 3);
-    g_house.setScale(glm::vec3(30.0f, 12.0f, 30.0f));
-    g_house.setPos(glm::vec3(0.0f, 5.95f, 0.0f));
-    g_house.setMaterial(g_matWoodBleached);
+//    g_house.setupVertexAttributes();
+//    g_house.setShaderID(g_shadingProg, 3);
+//    g_house.setScale(glm::vec3(30.0f, 12.0f, 30.0f));
+//    g_house.setPos(glm::vec3(0.0f, 5.95f, 0.0f));
+//    g_house.setMaterial(g_matWoodBleached);
     
     // 載入模型 - 只需要傳入模型路徑！
     for (const auto& path : modelPaths) {
         auto model = std::make_unique<Model>();
         if (model->LoadModel(path)) {
             models.push_back(std::move(model));
+            modelMatrices.push_back(glm::mat4(1.0f)); // 初始化為單位矩陣
             std::cout << "Successfully loaded: " << path << std::endl;
         } else {
             std::cout << "Failed to load: " << path << std::endl;
@@ -191,47 +224,44 @@ void render(void)
     glUniform3fv(glGetUniformLocation(g_shadingProg, "viewPos"), 1, glm::value_ptr(g_eyeloc));
     glUniform3fv(glGetUniformLocation(g_shadingProg, "lightPos"), 1, glm::value_ptr(g_light.getPos()));
 
-    for (int i = 0; i < ROW_NUM; i++)
-        for (int j = 0; j < ROW_NUM; j++) {
-            g_floor[i][j].uploadMaterial();
-            g_floor[i][j].drawRaw();
-        }
+//    for (int i = 0; i < ROW_NUM; i++)
+//        for (int j = 0; j < ROW_NUM; j++) {
+//            g_floor[i][j].uploadMaterial();
+//            g_floor[i][j].drawRaw();
+//        }
 
     g_light.drawRaw();
-    g_bottle.uploadMaterial();
-    g_bottle.drawRaw();
-    g_teapot.uploadMaterial();
-    g_teapot.drawRaw();
+//    g_bottle.uploadMaterial();
+//    g_bottle.drawRaw();
+//    g_teapot.uploadMaterial();
+//    g_teapot.drawRaw();
     g_tknot.uploadMaterial();
     g_tknot.drawRaw();
 
-    g_house.uploadMaterial();
-    g_house.drawRaw();
+//    g_house.uploadMaterial();
+//    g_house.drawRaw();
     
 //    glUseProgram(g_objShadingProg);
     //繪製obj model
-    glm::mat4 modelMatrix = glm::mat4(1.0f);
-    modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 1.0f, 0.0f));
-    modelMatrix = glm::scale(modelMatrix, glm::vec3(0.5f));
-
-    GLint modelLoc = glGetUniformLocation(g_shadingProg, "mxModel");
-    if (modelLoc != -1) {
-        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(modelMatrix));
-        std::cout << "  Set mxModel uniform" << std::endl;
-    } else {
-        std::cerr << "  mxModel uniform not found!" << std::endl;
-    }
-
-    std::cout << "Calling myModel.Render(g_objShadingProg)..." << std::endl;
-    for (auto& model : models) {
-         model->Render(g_shadingProg);
-     }
-    std::cout << "myModel.Render() finished" << std::endl;
-
-    // 檢查 OpenGL 錯誤 (after rendering)
-    GLenum error = glGetError();
-    if (error != GL_NO_ERROR) {
-        std::cerr << "OpenGL error in render(): " << error << std::endl;
+    for (size_t i = 0; i < models.size(); ++i) {
+        glm::mat4 modelMatrix = modelMatrices[i]; // 取得當前模型的 model matrix
+        // 在這裡進行模型的變換 (修改 modelMatrix)
+        if (i == 0) { // 對第一個模型 (woodCube) 進行變換
+            modelMatrix = glm::translate(modelMatrix, glm::vec3(-2.0f, 2.3f, 0.0f));
+            modelMatrix = glm::scale(modelMatrix, glm::vec3(0.8f));
+        } else if (i == 1) { // 對第二個模型 (Elephant_Toy) 進行變換
+            modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 2.8f, 0.0f));
+            modelMatrix = glm::rotate(modelMatrix, glm::radians(45.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+            modelMatrix = glm::scale(modelMatrix, glm::vec3(2.5f));
+        }else if (i == 2) { // 對第三個模型 (House) 進行變換
+            modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 1.5f, 0.0f));
+            modelMatrix = glm::scale(modelMatrix, glm::vec3(3.0f));
+        }
+        GLint modelLoc = glGetUniformLocation(g_shadingProg, "mxModel");
+        if (modelLoc != -1) {
+            glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(modelMatrix));
+        }
+        models[i]->Render(g_shadingProg);
     }
 }
 //----------------------------------------------------------------------------

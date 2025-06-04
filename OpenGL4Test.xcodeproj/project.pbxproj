@@ -132,6 +132,8 @@
 		F5CA4C382DEC86E200C76F85 /* House_roughness.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = House_roughness.png; sourceTree = "<group>"; };
 		F5CA4C392DF018D400C76F85 /* CLightManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CLightManager.h; sourceTree = "<group>"; };
 		F5CA4C3A2DF0190700C76F85 /* CLightManager.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = CLightManager.cpp; sourceTree = "<group>"; };
+		F5CA4C3D2DF0901C00C76F85 /* ui_fragshader.glsl */ = {isa = PBXFileReference; lastKnownFileType = text; path = ui_fragshader.glsl; sourceTree = "<group>"; };
+		F5CA4C3E2DF0901C00C76F85 /* ui_vtxshader.glsl */ = {isa = PBXFileReference; lastKnownFileType = text; path = ui_vtxshader.glsl; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -222,12 +224,14 @@
 				F5CA4C242DEC2ED100C76F85 /* tiny_obj_loader.cc */,
 				F5CA4C1D2DEC215A00C76F85 /* stb_image.h */,
 				F5CA4C162DEB891C00C76F85 /* stb_image_aug.cpp */,
-				F57450E82DE73E4600155FE2 /* common */,
 				F51665612DD47C4700C50D34 /* Homework.cpp */,
+				F57450E82DE73E4600155FE2 /* common */,
 				F516652D2DD46DBB00C50D34 /* models */,
 				F51665322DD46DBB00C50D34 /* f_gouraud.glsl */,
 				F51665332DD46DBB00C50D34 /* f_npr.glsl */,
 				F51665342DD46DBB00C50D34 /* f_phong.glsl */,
+				F5CA4C3D2DF0901C00C76F85 /* ui_fragshader.glsl */,
+				F5CA4C3E2DF0901C00C76F85 /* ui_vtxshader.glsl */,
 				F51665352DD46DBB00C50D34 /* OpenGL4Test.entitlements */,
 				F51665362DD46DBB00C50D34 /* v_gouraud.glsl */,
 				F51665372DD46DBB00C50D34 /* v_npr.glsl */,

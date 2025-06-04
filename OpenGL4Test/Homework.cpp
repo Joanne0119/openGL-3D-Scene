@@ -10,13 +10,14 @@
 //    也就是每一個物件必須能接受兩個以上光源的照明計算加總
 //    主燈光跟各自的 Spot Light
 // 三個光源(標示紅點處)必須是 Spot Light，而且有其各自照明方向跟控制
-// (2分) 2D介面呈現在畫面上
-// (2分) 2D介面所對應的四個功能都有作用，一個功能0.5分
+// ✓ (2分) 2D介面呈現在畫面上
+// ✓ (2分) 2D介面所對應的四個功能都有作用，一個功能0.5分
 // 介面的類別封裝部分沒有特別的需求
 // ✓ (2分) 正中間的主燈光必須使用到 PerPixel Lighting
 // (2分) 不會穿牆
-// (1分) 至少有一個光源搭配鍵盤的 R G B 提供顏色的改變
+// ✓ (1分) 至少有一個光源搭配鍵盤的 R G B 提供顏色的改變
 // (5%) 創意分數，自由發揮非上述功能
+    //加貼圖
 
 //#define GLM_ENABLE_EXPERIMENTAL 1
 
@@ -46,9 +47,6 @@
 #include "models/CSphere.h"
 #include "common/CLightManager.h"
 
-//#include "common/OBJLoader.h"
-//#include "common/ModelManager.h"
-//#include "common/ModelLoader.h"
 #include "Model.h"
 
 
@@ -59,21 +57,29 @@
 #define SCREEN_HEIGHT 800 
 #define ROW_NUM 30
 
-//CBottle  g_bottle(18, 8, 4);
 //CTeapot  g_teapot(5);
 CTorusKnot g_tknot(4);
-//CBox g_house;
 CSphere g_sphere;
-CButton g_button;
 
-glm::vec3 g_eyeloc(6.0f, 6.0f, 6.0f); // 鏡頭位置, 預設在 (8,8,8) 
+glm::vec3 g_eyeloc(6.0f, 6.0f, 6.0f); // 鏡頭位置, 預設在 (8,8,8)
 CCube g_centerloc; // view center預設在 (0,0,0)，不做任何描繪操作
 CQuad g_floor[ROW_NUM][ROW_NUM]; 
 
 GLuint g_shadingProg;
-GLuint g_objShadingProg;
+GLuint g_uiShader;
 GLuint g_modelVAO;
 int g_modelVertexCount;
+
+// 2d
+std::array<CButton, 4> g_button = {
+    CButton(50.0f, 50.0f, glm::vec4(0.20f, 0.45f, 0.45f, 1.0f), glm::vec4(0.60f, 0.85f, 0.85f, 1.0f)),
+    CButton(50.0f, 50.0f, glm::vec4(0.45f, 0.35f, 0.65f, 1.0f), glm::vec4(0.85f, 0.75f, 0.95f, 1.0f)),
+    CButton(50.0f, 50.0f, glm::vec4(0.45f, 0.35f, 0.65f, 1.0f), glm::vec4(0.85f, 0.75f, 0.95f, 1.0f)),
+    CButton(50.0f, 50.0f, glm::vec4(0.45f, 0.35f, 0.65f, 1.0f), glm::vec4(0.85f, 0.75f, 0.95f, 1.0f))
+};
+glm::mat4 g_2dmxView = glm::mat4(1.0f);
+glm::mat4 g_2dmxProj = glm::mat4(1.0f);
+GLint g_2dviewLoc, g_2dProjLoc;
 
 CLightManager lightManager;
 // 全域光源 (位置在 5,5,0)
@@ -88,27 +94,11 @@ CLight* g_light = new CLight(
 //// 創建第一個點光源
 CLight* pointLight1 = new CLight(
      glm::vec3(0.0f, 10.0f, 0.0f),           // 位置
-     glm::vec4(0.3f, 0.3f, 0.3f, 1.0f),     // 環境光 - 較高比例
-     glm::vec4(0.6f, 0.6f, 0.6f, 1.0f),     // 漫反射 - 中等強度
+     glm::vec4(0.3f, 0.3f, 0.3f, 1.0f),     // 環境光
+     glm::vec4(0.8f, 0.8f, 0.8f, 1.0f),     // 漫反射
      glm::vec4(0.2f, 0.2f, 0.2f, 1.0f),     // 鏡面反射 - 較低
     1.0f, 0.09f, 0.032f                    // 衰減參數            // attenuation
 );
-CLight* outLight = new CLight(
-     glm::vec3(0.0f, 40.0f, 0.0f),           // 位置
-     glm::vec4(0.3f, 0.3f, 0.3f, 1.0f),     // 環境光 - 較高比例
-     glm::vec4(0.6f, 0.6f, 0.6f, 1.0f),     // 漫反射 - 中等強度
-     glm::vec4(0.2f, 0.2f, 0.2f, 1.0f),     // 鏡面反射 - 較低
-    1.0f, 0.09f, 0.032f                    // 衰減參數            // attenuation
-);
-//
-//// 創建第二個點光源（不同顏色）
-//CLight* pointLight2 = new CLight(
-//    glm::vec3(-2.0f, 2.0f, -2.0f),      // position
-//    glm::vec4(0.1f, 0.1f, 0.2f, 1.0f),  // ambient
-//    glm::vec4(0.3f, 0.3f, 0.8f, 1.0f),  // diffuse（藍色調）
-//    glm::vec4(0.5f, 0.5f, 1.0f, 1.0f),  // specular
-//    1.0f, 0.09f, 0.032f                  // attenuation
-//);
 
 // 創建聚光燈
 CLight* spotLight1 = new CLight(
@@ -116,7 +106,7 @@ CLight* spotLight1 = new CLight(
     glm::vec3(-3.8f, 0.0f, 3.8f),        // target
     12.5f, 20.5f, 2.5f,                 // inner/outer cutoff, exponent
     glm::vec4(0.1f, 0.0f, 0.0f, 1.0f),  // ambient
-    glm::vec4(0.3f, 0.3f, 0.8f, 1.0f),  // diffuse（藍色調）
+    glm::vec4(0.6f, 0.6f, 0.6f, 1.0f),  // diffuse
     glm::vec4(1.0f, 0.8f, 0.8f, 1.0f),  // specular
     1.0f, 0.09f, 0.032f                  // attenuation
 );
@@ -125,7 +115,7 @@ CLight* spotLight2 = new CLight(
     glm::vec3(0.0f, 0.0f, -5.0f),        // target
     12.5f, 17.5f, 2.0f,                 // inner/outer cutoff, exponent
     glm::vec4(0.1f, 0.0f, 0.0f, 1.0f),  // ambient
-    glm::vec4(1.0f, 0.5f, 0.5f, 1.0f),  // diffuse（紅色調）
+    glm::vec4(0.6f, 0.6f, 0.6f, 1.0f),  // diffuse
     glm::vec4(1.0f, 0.8f, 0.8f, 1.0f),  // specular
     1.0f, 0.09f, 0.032f                  // attenuation
 );
@@ -134,7 +124,7 @@ CLight* spotLight3 = new CLight(
     glm::vec3(4.0f, 0.0f, 4.0f),        // target
     12.5f, 17.5f, 2.0f,                 // inner/outer cutoff, exponent
     glm::vec4(0.1f, 0.0f, 0.0f, 1.0f),  // ambient
-    glm::vec4(1.0f, 0.5f, 0.5f, 1.0f),  // diffuse（紅色調）
+    glm::vec4(0.6f, 0.6f, 0.6f, 1.0f),  // diffuse
     glm::vec4(1.0f, 0.8f, 0.8f, 1.0f),  // specular
     1.0f, 0.09f, 0.032f                  // attenuation
 );
@@ -151,9 +141,6 @@ CMaterial g_matWoodHoney;
 CMaterial g_matWoodLightOak;
 CMaterial g_matWoodBleached;
 
-//ModelManager g_modelManager;
-//ModelLoader model;
-//Model myModel;
 std::vector<std::unique_ptr<Model>> models;
 std::vector<glm::mat4> modelMatrices;
 std::vector<std::string> modelPaths = {
@@ -163,7 +150,12 @@ std::vector<std::string> modelPaths = {
     "models/House.obj",
     "models/Teddy.obj",
     "models/Truck.obj",
+    "models/Light.obj",
+    "models/Light.obj",
+    "models/Light.obj",
+    "models/Light.obj",
     "models/Rocket.obj"
+    
 };
 
 
@@ -175,9 +167,10 @@ void loadScene(void)
 {
     genMaterial();
     g_shadingProg = CShaderPool::getInstance().getShader("v_phong.glsl", "f_phong.glsl");
+    g_uiShader = CShaderPool::getInstance().getShader("ui_vtxshader.glsl", "ui_fragshader.glsl");
+    
     lightManager.addLight(g_light);
     lightManager.addLight(pointLight1);
-    lightManager.addLight(outLight);
     lightManager.addLight(spotLight1);
     lightManager.addLight(spotLight2);
     lightManager.addLight(spotLight3);
@@ -205,12 +198,6 @@ void loadScene(void)
     g_tknot.setScale(glm::vec3(0.4f, 0.4f, 0.4f));
     g_tknot.setPos(glm::vec3(-2.0f, 0.5f, 2.0f));
     g_tknot.setMaterial(g_matWaterRed);
-
-//    g_house.setupVertexAttributes();
-//    g_house.setShaderID(g_shadingProg, 3);
-//    g_house.setScale(glm::vec3(30.0f, 12.0f, 30.0f));
-//    g_house.setPos(glm::vec3(0.0f, 5.95f, 0.0f));
-//    g_house.setMaterial(g_matWoodBleached);
     
     // 載入模型 - 只需要傳入模型路徑！
     for (const auto& path : modelPaths) {
@@ -223,7 +210,51 @@ void loadScene(void)
             std::cout << "Failed to load: " << path << std::endl;
         }
     }
-   
+    for (size_t i = 0; i < models.size(); ++i) {
+        glm::mat4 modelMatrix = modelMatrices[i];
+        if (i == 1) { // Elephant_Toy
+            modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 2.8f, 0.0f));
+            modelMatrix = glm::rotate(modelMatrix, glm::radians(45.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+            modelMatrix = glm::scale(modelMatrix, glm::vec3(2.5f));
+        } else if (i == 2) { // House
+            modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 1.5f, 0.0f));
+            modelMatrix = glm::scale(modelMatrix, glm::vec3(3.0f));
+        } else if (i == 3) { // Teddy
+            modelMatrix = glm::translate(modelMatrix, glm::vec3(-4.0f, 2.15f, 4.0f));
+            modelMatrix = glm::scale(modelMatrix, glm::vec3(0.6f));
+            modelMatrix = glm::rotate(modelMatrix, glm::radians(60.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        }else if (i == 4) { // Truck
+            modelMatrix = glm::translate(modelMatrix, glm::vec3(4.0f, 1.5f, 4.0f));
+            modelMatrix = glm::scale(modelMatrix, glm::vec3(0.3f));
+            modelMatrix = glm::rotate(modelMatrix, glm::radians(120.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        }else if (i == 5) { // Spotlight1
+            modelMatrix = glm::translate(modelMatrix, glm::vec3(-4.0f, 8.0f, 4.0f));
+            modelMatrix = glm::scale(modelMatrix, glm::vec3(0.2f));
+            modelMatrix = glm::rotate(modelMatrix, glm::radians(180.0f), glm::vec3(1.0f, .0f, 0.0f));
+        }else if (i == 6) { // Spotlight2
+            modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 8.0f, -5.0f));
+            modelMatrix = glm::scale(modelMatrix, glm::vec3(0.2f));
+            modelMatrix = glm::rotate(modelMatrix, glm::radians(180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        }else if (i == 7) { // Spotlight3
+            modelMatrix = glm::translate(modelMatrix, glm::vec3(4.0f, 8.0f, 4.0f));
+            modelMatrix = glm::scale(modelMatrix, glm::vec3(0.2f));
+            modelMatrix = glm::rotate(modelMatrix, glm::radians(180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        }else if (i == 8) { // g_light
+            modelMatrix = glm::translate(modelMatrix, glm::vec3(3.5f, 5.5f, 0.0f));
+            modelMatrix = glm::scale(modelMatrix, glm::vec3(0.2f));
+            modelMatrix = glm::rotate(modelMatrix, glm::radians(180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+            models[8]->SetAnimation(AnimationType::ORBIT, 0.8f, 2.0f);
+        }else if (i == 9) { // Rocket
+            modelMatrix = glm::translate(modelMatrix, glm::vec3(-0.5f, 1.5f, -5.0f));
+            modelMatrix = glm::scale(modelMatrix, glm::vec3(0.8f));
+            modelMatrix = glm::rotate(modelMatrix, glm::radians(30.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        }
+        
+        GLint modelLoc = glGetUniformLocation(g_shadingProg, "mxModel");
+        if (modelLoc != -1) {
+            glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(modelMatrix));
+        }
+    }
 
 	CCamera::getInstance().updateView(g_eyeloc); // 設定 eye 位置
     CCamera::getInstance().updateCenter(glm::vec3(0,4,0));
@@ -236,6 +267,22 @@ void loadScene(void)
 
     GLint projLoc = glGetUniformLocation(g_shadingProg, "mxProj"); 	// 取得投影矩陣變數的位置
     glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(mxProj));
+    
+    // 產生  UI 所需的相關資源
+    g_button[0].setScreenPos(500.0f, 80.0f);
+    g_button[0].init(g_uiShader);
+    g_button[1].setScreenPos(570.0f, 80.0f);
+    g_button[1].init(g_uiShader);
+    g_button[2].setScreenPos(640.0f, 80.0f);
+    g_button[2].init(g_uiShader);
+    g_button[3].setScreenPos(710.0f, 80.0f);
+    g_button[3].init(g_uiShader);
+    g_2dviewLoc = glGetUniformLocation(g_uiShader, "mxView");     // 取得 view matrix 變數位置
+    glUniformMatrix4fv(g_2dviewLoc, 1, GL_FALSE, glm::value_ptr(g_2dmxView));
+
+    g_2dProjLoc = glGetUniformLocation(g_uiShader, "mxProj");     // 取得 proj matrix 變數位置
+    g_2dmxProj = glm::ortho(0.0f, (float)SCREEN_WIDTH, 0.0f, (float)SCREEN_HEIGHT, -1.0f, 1.0f);
+    glUniformMatrix4fv(g_2dProjLoc, 1, GL_FALSE, glm::value_ptr(g_2dmxProj));
 
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // 設定清除 back buffer 背景的顏色
     glEnable(GL_DEPTH_TEST); // 啟動深度測試
@@ -245,6 +292,14 @@ void loadScene(void)
 void render(void)
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // 設定 back buffer 的背景顏色
+    
+    glUseProgram(g_uiShader); // 使用 shader program
+    glUniformMatrix4fv(g_2dviewLoc, 1, GL_FALSE, glm::value_ptr(g_2dmxView));
+    glUniformMatrix4fv(g_2dProjLoc, 1, GL_FALSE, glm::value_ptr(g_2dmxProj));
+    g_button[0].draw();
+    g_button[1].draw();
+    g_button[2].draw();
+    g_button[3].draw();
     glUseProgram(g_shadingProg);
 
     //上傳光源與相機位置
@@ -290,8 +345,24 @@ void render(void)
             modelMatrix = glm::translate(modelMatrix, glm::vec3(4.0f, 1.5f, 4.0f));
             modelMatrix = glm::scale(modelMatrix, glm::vec3(0.3f));
             modelMatrix = glm::rotate(modelMatrix, glm::radians(120.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        }else if (i == 5) { // Rocket
-            modelMatrix = glm::translate(modelMatrix, glm::vec3(3.0f, 1.5f, -5.0f));
+        }else if (i == 5) { // Spotlight1
+            modelMatrix = glm::translate(modelMatrix, glm::vec3(-4.0f, 8.0f, 4.0f));
+            modelMatrix = glm::scale(modelMatrix, glm::vec3(0.2f));
+            modelMatrix = glm::rotate(modelMatrix, glm::radians(180.0f), glm::vec3(1.0f, .0f, 0.0f));
+        }else if (i == 6) { // Spotlight2
+            modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 8.0f, -5.0f));
+            modelMatrix = glm::scale(modelMatrix, glm::vec3(0.2f));
+            modelMatrix = glm::rotate(modelMatrix, glm::radians(180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        }else if (i == 7) { // Spotlight3
+            modelMatrix = glm::translate(modelMatrix, glm::vec3(4.0f, 8.0f, 4.0f));
+            modelMatrix = glm::scale(modelMatrix, glm::vec3(0.2f));
+            modelMatrix = glm::rotate(modelMatrix, glm::radians(180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        }else if (i == 8) { // g_light
+            modelMatrix = glm::translate(modelMatrix, glm::vec3(3.5f, 5.5f, 0.0f));
+            modelMatrix = glm::scale(modelMatrix, glm::vec3(0.2f));
+            modelMatrix = glm::rotate(modelMatrix, glm::radians(180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        }else if (i == 9) { // Rocket
+            modelMatrix = glm::translate(modelMatrix, glm::vec3(-0.5f, 1.5f, -5.0f));
             modelMatrix = glm::scale(modelMatrix, glm::vec3(0.8f));
             modelMatrix = glm::rotate(modelMatrix, glm::radians(30.0f), glm::vec3(0.0f, 1.0f, 0.0f));
         }

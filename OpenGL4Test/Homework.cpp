@@ -243,7 +243,6 @@ void loadScene(void)
             modelMatrix = glm::translate(modelMatrix, glm::vec3(3.5f, 5.5f, 0.0f));
             modelMatrix = glm::scale(modelMatrix, glm::vec3(0.2f));
             modelMatrix = glm::rotate(modelMatrix, glm::radians(180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-            models[8]->SetAnimation(AnimationType::ORBIT, 0.8f, 2.0f);
         }else if (i == 9) { // Rocket
             modelMatrix = glm::translate(modelMatrix, glm::vec3(-0.5f, 1.5f, -5.0f));
             modelMatrix = glm::scale(modelMatrix, glm::vec3(0.8f));

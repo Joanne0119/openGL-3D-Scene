@@ -26,7 +26,8 @@ float g_mouseSens = 0.005f;
 extern CCube g_centerloc;
 extern GLuint g_shadingProg;
 extern glm::vec3 g_eyeloc;
-extern CLight g_light;
+extern CLight* g_light;
+
 
 extern CMaterial g_matWaterGreen;
 extern CSphere  g_sphere; 
@@ -309,7 +310,7 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
                             break;
                         case 'L':
                         case 'l':
-                            g_light.setMotionEnabled();
+                            g_light->setMotionEnabled();
                             break;
                     }
                 }   

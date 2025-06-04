@@ -220,3 +220,19 @@ void CLight::drawRaw()
 {
     if (_displayOn) _lightObj.drawRaw();
 }
+
+CLight::LightType CLight::getType() const {
+    return _type;
+}
+
+float CLight::getInnerCutOff() const {
+    return _innerCutOff;
+}
+
+float CLight::getOuterCutOff() const {
+    return _outerCutOff;
+}
+
+float CLight::getExponent() const {
+    return _exponent;
+}

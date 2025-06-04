@@ -61,6 +61,11 @@ public:
     // 磞酶 light 家
     void draw();
     void drawRaw();
+    
+    LightType getType() const;
+    float getInnerCutOff() const;
+    float getOuterCutOff() const;
+    float getExponent() const;
 
 private:
     std::string _lightname;
@@ -89,4 +94,5 @@ private:
     // 笆篈北闽跑计
     float _clock;    // 笆篈北 clock
     bool  _motionOn; // 方笆篈北
+    
 };

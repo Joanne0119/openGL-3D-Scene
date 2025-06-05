@@ -21,6 +21,8 @@ public:
 	void setTransformMatrix(glm::mat4 mxMatrix);
 	void updateMatrix();
 	glm::vec3 getPos(); // 取得模型的位置
+    glm::vec3 getScale();
+    glm::vec3 getColor();
 	glm::mat4 getModelMatrix();
 	glm::mat4 getTransMatrix();
 	GLuint getShaderProgram();

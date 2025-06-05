@@ -3,6 +3,7 @@
 #include "CLight.h"
 #include <glm/gtc/type_ptr.hpp>
 #include "typedefs.h"
+#include <iostream>
 
 CLight::CLight(
     glm::vec3 position, glm::vec4 ambient, glm::vec4 diffuse, glm::vec4 specular,
@@ -198,18 +199,35 @@ void CLight::update(float dt)
     if (_motionOn) updateMotion(dt);
 }
  
-void CLight::updateMotion(float dt) 
+void CLight::updateMotion(float dt)
 {
-    glm::mat4 mxRot; 
-    glm::vec4 pos; 
-    _clock += dt; 
+    glm::mat4 mxRot;
+    glm::vec4 pos;
+    _clock += dt;
     if (_clock >= 4.0f) _clock = 0.0f;
-    mxRot = glm::rotate(glm::mat4(1.0f), static_cast<float>(_clock * M_PI_2), glm::vec3(0.0f, 1.0f, 0.0f));
+    
+    // 計算當前角度和半徑
+    float currentAngle = _clock * M_PI_2; // 每4秒轉90度 (π/2)
+    float radius = glm::length(_posStart); // 計算起始位置到原點的距離
+    
+    std::cout << "=== LIGHT MOTION DEBUG ===" << std::endl;
+    std::cout << "Light clock: " << _clock << std::endl;
+    std::cout << "Light angle (radians): " << currentAngle << std::endl;
+    std::cout << "Light angle (degrees): " << glm::degrees(currentAngle) << std::endl;
+    std::cout << "Light start position: (" << _posStart.x << ", " << _posStart.y << ", " << _posStart.z << ")" << std::endl;
+    std::cout << "Light radius from origin: " << radius << std::endl;
+    
+    mxRot = glm::rotate(glm::mat4(1.0f), currentAngle, glm::vec3(0.0f, 1.0f, 0.0f));
     pos = glm::vec4(_posStart, 1.0f);
     _position = glm::vec3(mxRot * pos);
+    
+    std::cout << "Light current position: (" << _position.x << ", " << _position.y << ", " << _position.z << ")" << std::endl;
+    std::cout << "=============================" << std::endl;
+    
     setPos(_position);
     if (_displayOn) _lightObj.setPos(_position);
 }
+
 
 void CLight::draw()
 {
@@ -235,4 +253,16 @@ float CLight::getOuterCutOff() const {
 
 float CLight::getExponent() const {
     return _exponent;
+}
+
+bool CLight::isMotionOn() const {
+    return _motionOn;
+}
+
+float CLight::getClock() const {
+    return _clock;
+}
+
+glm::vec3 CLight::getStartPos() const {
+    return _posStart;
 }

@@ -134,6 +134,7 @@
 		F5CA4C3A2DF0190700C76F85 /* CLightManager.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = CLightManager.cpp; sourceTree = "<group>"; };
 		F5CA4C3D2DF0901C00C76F85 /* ui_fragshader.glsl */ = {isa = PBXFileReference; lastKnownFileType = text; path = ui_fragshader.glsl; sourceTree = "<group>"; };
 		F5CA4C3E2DF0901C00C76F85 /* ui_vtxshader.glsl */ = {isa = PBXFileReference; lastKnownFileType = text; path = ui_vtxshader.glsl; sourceTree = "<group>"; };
+		F5CA4C412DF17CB700C76F85 /* CollisionManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CollisionManager.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -243,6 +244,7 @@
 		F57450E82DE73E4600155FE2 /* common */ = {
 			isa = PBXGroup;
 			children = (
+				F5CA4C412DF17CB700C76F85 /* CollisionManager.h */,
 				F5CA4C392DF018D400C76F85 /* CLightManager.h */,
 				F5CA4C3A2DF0190700C76F85 /* CLightManager.cpp */,
 				F5CA4C292DEC354C00C76F85 /* Model.h */,

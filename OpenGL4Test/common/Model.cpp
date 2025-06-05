@@ -326,6 +326,7 @@ GLuint Model::LoadTexture(const std::string& path) {
 void Model::Render(GLuint shaderProgram) {
     // 確保 shader 程式是當前使用的
     glUseProgram(shaderProgram);
+    
 
     for (size_t i = 0; i < meshes.size(); i++) {
         const Mesh& mesh = meshes[i];
@@ -474,4 +475,69 @@ std::string Model::GetDirectory(const std::string& filepath) {
     }
     
     return ".";
+}
+
+void Model::setAutoRotate()
+{
+    if( !_bautoRotate ) _bautoRotate = true;
+}
+
+void Model::update(float dt)
+{
+    bool shouldMove = _bautoRotate;
+    if (_followLight != nullptr) {
+        shouldMove = _followLight->isLightOn() && _followLight->isMotionOn();
+    }
+    
+    if (shouldMove && _followLight != nullptr) {
+        // 完全同步燈光的運動參數
+        float lightClock = _followLight->getClock();
+        glm::vec3 lightStartPos = _followLight->getStartPos();
+        
+        // 使用與燈光完全相同的計算方式
+        float currentAngle = lightClock * M_PI_2; // 與燈光相同的角度計算
+        float lightRadius = glm::length(lightStartPos); // 燈光的半徑
+        
+        // 計算同步位置 - 方法1：完全跟隨燈光軌跡
+        glm::mat4 mxRot = glm::rotate(glm::mat4(1.0f), currentAngle, glm::vec3(0.0f, 1.0f, 0.0f));
+        glm::vec4 pos = glm::vec4(lightStartPos, 1.0f);
+        glm::vec3 calculatedPos = glm::vec3(mxRot * pos);
+        
+        // 添加偏移避免重疊（可調整）
+        glm::vec3 modelOffset = glm::vec3(0.0f, -2.0f, 0.0f); // Y軸向下偏移
+        calculatedPos += modelOffset;
+        
+        _modelMatrix = glm::translate(glm::mat4(1.0f), calculatedPos);
+        _modelMatrix = glm::rotate(_modelMatrix, currentAngle, glm::vec3(0.0f, 1.0f, 0.0f));
+        
+        std::cout << "=== MODEL FOLLOWING LIGHT ===" << std::endl;
+        std::cout << "Light clock: " << lightClock << " / 4.0" << std::endl;
+        std::cout << "Sync angle (degrees): " << glm::degrees(currentAngle) << std::endl;
+        std::cout << "Light radius: " << lightRadius << std::endl;
+        std::cout << "Model position: (" << calculatedPos.x << ", " << calculatedPos.y << ", " << calculatedPos.z << ")" << std::endl;
+        std::cout << "==============================" << std::endl;
+    }
+    else if (shouldMove) {
+        // 修正原始模型旋轉，使其更合理
+        _clock += dt;
+        if (_clock >= 4.0f) { // 改為與燈光相同的周期
+            _clock = 0.0f;
+        }
+        
+        float angle = _clock * M_PI_2; // 改為與燈光相同的角度計算
+        float radius = 10.0f;
+        
+        float x = radius * cos(angle);
+        float z = radius * sin(angle);
+        
+        _modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(x, 0.0f, z));
+        _modelMatrix = glm::rotate(_modelMatrix, angle, glm::vec3(0.0f, 1.0f, 0.0f));
+        
+        std::cout << "=== MODEL AUTO ROTATION ===" << std::endl;
+        std::cout << "Model clock: " << _clock << " / 4.0" << std::endl;
+        std::cout << "Model angle (degrees): " << glm::degrees(angle) << std::endl;
+        std::cout << "Model radius: " << radius << std::endl;
+        std::cout << "Model position: (" << x << ", 0.0, " << z << ")" << std::endl;
+        std::cout << "============================" << std::endl;
+    }
 }

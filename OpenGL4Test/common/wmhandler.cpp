@@ -2,6 +2,7 @@
 #include <GL/glew.h>
 #include <glm/gtc/type_ptr.hpp>
 #include <array>
+#include <memory>
 
 #include "CCamera.h"
 #include "wmhandler.h"
@@ -15,6 +16,7 @@
 #include "../common/CLight.h"
 #include "../common/CButton.h"
 #include "../common/Model.h"
+#include "CollisionManager.h"
 
 //#define SPOT_TARGET  // Example 2
 
@@ -38,13 +40,13 @@ extern std::array<CButton, 4> g_button;
 extern std::vector<std::unique_ptr<Model>> models;
 
 extern CMaterial g_matWaterGreen;
-extern CSphere  g_sphere; 
+extern CSphere  g_sphere;
 
 #ifdef SPOT_TARGET
 extern CCube g_spotTarget;
 #endif
 
-
+extern CollisionManager g_collisionManager;
 Arcball g_arcball;
 
 // 新增：計算攝影機的前方、右方、上方向量
@@ -69,28 +71,49 @@ glm::vec3 getCameraUp() {
     return glm::vec3(viewMatrix[0][1], viewMatrix[1][1], viewMatrix[2][1]);
 }
 
-// 新增：更新攝影機位置的函數
+
 void updateCameraPosition(const glm::vec3& movement) {
     glm::vec3 currentEye = CCamera::getInstance().getViewLocation();
-    glm::vec3 newEye = currentEye + movement;
     
-    // 獲取當前的前方向量來計算新的中心點
+
+    glm::vec3 safeMovement = g_collisionManager.getSafeMovement(movement, currentEye);
+    glm::vec3 newEye = currentEye + safeMovement;
+
     glm::vec3 forward = getCameraForward();
     float distance = glm::length(g_centerloc.getPos() - currentEye);
     glm::vec3 newCenter = newEye + forward * distance;
     
-    // 更新位置
     g_eyeloc = newEye;
     g_centerloc.setPos(newCenter);
     
-    // 更新攝影機
     CCamera::getInstance().updateViewCenter(g_eyeloc, g_centerloc.getPos());
     
-    // 更新view matrix
     glm::mat4 mxView = CCamera::getInstance().getViewMatrix();
     GLint viewLoc = glGetUniformLocation(g_shadingProg, "mxView");
     glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(mxView));
 }
+
+void initializeCollisionSystem() {
+    g_collisionManager.addObstacle(AABB(glm::vec3(-1.0f, -2.0f, -1.0f),
+                                       glm::vec3(1.0f, 0.0f, 1.0f)));
+    
+    g_collisionManager.addObstacle(AABB(glm::vec3(2.0f, -2.0f, -2.0f),
+                                       glm::vec3(3.0f, 0.0f, -1.0f)));
+    
+    std::cout << "Collision system initialized with "
+              << g_collisionManager.getWallCount() << " walls and "
+              << g_collisionManager.getObstacleCount() << " obstacles." << std::endl;
+}
+
+bool checkModelCollision(const glm::vec3& modelPosition, const glm::vec3& modelSize) {
+    AABB modelAABB(modelPosition - modelSize * 0.5f,
+                   modelPosition + modelSize * 0.5f);
+    
+    // 這裡可以實現模型與模型之間的碰撞檢測
+    // 暫時返回false，可以根據需要擴展
+    return false;
+}
+
 
 void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
     double xpos, ypos;
@@ -102,8 +125,8 @@ void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
     //std::cout << "button = " << button << "action = " << action << "mods = " << mods << std::endl;
     if (button == GLFW_MOUSE_BUTTON_LEFT )
     {
-		if (action == GLFW_PRESS)
-		{
+        if (action == GLFW_PRESS)
+        {
             g_bCamRoting = true;
             if (g_button[0].handleClick((float)xpos, height - (float)ypos)) {
                 if(g_light->isLightOn() == true)
@@ -134,14 +157,15 @@ void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
                     spotLight3->setLightOn(true);
                 }
             }
-		}
+        }
         else if (action == GLFW_RELEASE)
         {
-            g_bCamRoting = false; 
-			g_bfirstMouse = true;
-        }      
+            g_bCamRoting = false;
+            g_bfirstMouse = true;
+        }
     }
 }
+
 // ---------------------------------------------------------------------------------------
 
 
@@ -187,11 +211,11 @@ void scrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
 }
 
 // key : GLFW_KEY_0�B GLFW_KEY_a�BGLFW_KEY_ESCAPE�BGLFW_KEY_SPACE
-// action : 
+// action :
 //          GLFW_PRESS�G����Q���U�C
 //          GLFW_RELEASE�G����Q����C
 //          GLFW_REPEAT�G����Q����Ĳ�o�]�����ɷ|Ĳ�o�h���^
-// mods : 
+// mods :
 //          GLFW_MOD_SHIFT�GShift ��Q���U�C
 //          GLFW_MOD_CONTROL�GCtrl ��Q���U�C
 //          GLFW_MOD_ALT�GAlt ��Q���U�C
@@ -295,29 +319,29 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
                             break;
                         case 'P':
                         case 'p':
-							if (CCamera::getInstance().getProjectionType() != CCamera::Type::PERSPECTIVE) {
-								CCamera::getInstance().updatePerspective(45.0f, 1.0f, 1.0f, 100.0f);
+                            if (CCamera::getInstance().getProjectionType() != CCamera::Type::PERSPECTIVE) {
+                                CCamera::getInstance().updatePerspective(45.0f, 1.0f, 1.0f, 100.0f);
                                 mxProj = CCamera::getInstance().getProjectionMatrix();
                                 projLoc = glGetUniformLocation(g_shadingProg, "mxProj");
                                 glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(mxProj));
                             }
                             break;
-						case 'O':
-						case 'o':
+                        case 'O':
+                        case 'o':
                             if (CCamera::getInstance().getProjectionType() != CCamera::Type::ORTHOGRAPHIC) {
-								CCamera::getInstance().updateOrthographic(-3.0f, 3.0f, -3.0f, 3.0f, 1.0f, 100.0f);
+                                CCamera::getInstance().updateOrthographic(-3.0f, 3.0f, -3.0f, 3.0f, 1.0f, 100.0f);
                                 mxProj = CCamera::getInstance().getProjectionMatrix();
                                 projLoc = glGetUniformLocation(g_shadingProg, "mxProj");
                                 glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(mxProj));
-                            } 
+                            }
                             break;
                         case 'W':
                         case 'w':
-//							vPos = g_centerloc.getPos();
+//                            vPos = g_centerloc.getPos();
 //                            g_centerloc.setPos(glm::vec3(vPos.x, vPos.y , vPos.z - 0.05f));
-//							g_eyeloc = CCamera::getInstance().getViewLocation();
+//                            g_eyeloc = CCamera::getInstance().getViewLocation();
 //                            g_eyeloc.z = g_eyeloc.z - 0.05f;
-//							CCamera::getInstance().updateViewCenter(g_eyeloc, g_centerloc.getPos());
+//                            CCamera::getInstance().updateViewCenter(g_eyeloc, g_centerloc.getPos());
 //                            mxView = CCamera::getInstance().getViewMatrix();
 //                            viewLoc = glGetUniformLocation(g_shadingProg, "mxView");
 //                            glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(mxView));
@@ -379,12 +403,46 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
                                 updateCameraPosition(movement);
                             }
                             break;
+                        case 'Q':
+                        case 'q':
+                            // 向上移動
+                            {
+                                glm::vec3 up = getCameraUp();
+                                glm::vec3 movement = up * moveSpeed;
+                                updateCameraPosition(movement);
+                            }
+                            break;
+                        case 'E':
+                        case 'e':
+                            // 向下移動
+                            {
+                                glm::vec3 up = getCameraUp();
+                                glm::vec3 movement = -up * moveSpeed;
+                                updateCameraPosition(movement);
+                            }
+                            break;
                         case 'L':
                         case 'l':
                             g_light->setMotionEnabled();
+//                            models[8]->setAutoRotate();
+                            break;
+                        case 'C':
+                        case 'c':
+                            // 新增：調整攝影機碰撞半徑
+                            {
+                                static bool largeBoundary = false;
+                                if (largeBoundary) {
+                                    g_collisionManager.setCameraRadius(0.3f);
+                                    std::cout << "Camera collision radius: 0.3" << std::endl;
+                                } else {
+                                    g_collisionManager.setCameraRadius(0.6f);
+                                    std::cout << "Camera collision radius: 0.6" << std::endl;
+                                }
+                                largeBoundary = !largeBoundary;
+                            }
                             break;
                     }
-                }   
+                }
             }
         
     }

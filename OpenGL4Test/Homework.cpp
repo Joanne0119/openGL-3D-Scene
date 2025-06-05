@@ -17,7 +17,7 @@
 // (2分) 不會穿牆
 // ✓ (1分) 至少有一個光源搭配鍵盤的 R G B 提供顏色的改變
 // (5%) 創意分數，自由發揮非上述功能
-    //加貼圖
+// ✓ //加貼圖
 
 //#define GLM_ENABLE_EXPERIMENTAL 1
 
@@ -46,6 +46,7 @@
 #include "models/CBox.h"
 #include "models/CSphere.h"
 #include "common/CLightManager.h"
+#include "common/CollisionManager.h"
 
 #include "Model.h"
 
@@ -56,6 +57,8 @@
 #define SCREEN_WIDTH  800
 #define SCREEN_HEIGHT 800 
 #define ROW_NUM 30
+
+CollisionManager g_collisionManager;
 
 //CTeapot  g_teapot(5);
 CTorusKnot g_tknot(4);
@@ -80,6 +83,7 @@ std::array<CButton, 4> g_button = {
 glm::mat4 g_2dmxView = glm::mat4(1.0f);
 glm::mat4 g_2dmxProj = glm::mat4(1.0f);
 GLint g_2dviewLoc, g_2dProjLoc;
+
 
 CLightManager lightManager;
 // 全域光源 (位置在 5,5,0)
@@ -153,12 +157,10 @@ std::vector<std::string> modelPaths = {
     "models/Light.obj",
     "models/Light.obj",
     "models/Light.obj",
-    "models/Light.obj",
+//    "models/Light.obj",
     "models/Rocket.obj"
     
 };
-
-
 void genMaterial();
 void renderModel(const std::string& modelName, const glm::mat4& modelMatrix);
 
@@ -186,13 +188,7 @@ void loadScene(void)
         }
     }
     
-//    g_teapot.setupVertexAttributes();
-//    g_teapot.setShaderID(g_shadingProg, 3);
-//    g_teapot.setScale(glm::vec3(0.75f, 0.75f, 0.75f));
-//    g_teapot.setPos(glm::vec3(-3.0f, 0.0005f, -3.0f));
-//    g_teapot.setRotate(45, glm::vec3(0, 1, 0));
-//    g_teapot.setMaterial(g_matWaterGreen);
-    
+    initializeCollisionSystem();
     g_tknot.setupVertexAttributes();
     g_tknot.setShaderID(g_shadingProg, 3);
     g_tknot.setScale(glm::vec3(0.4f, 0.4f, 0.4f));
@@ -210,50 +206,50 @@ void loadScene(void)
             std::cout << "Failed to load: " << path << std::endl;
         }
     }
-    for (size_t i = 0; i < models.size(); ++i) {
-        glm::mat4 modelMatrix = modelMatrices[i];
-        if (i == 1) { // Elephant_Toy
-            modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 2.8f, 0.0f));
-            modelMatrix = glm::rotate(modelMatrix, glm::radians(45.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-            modelMatrix = glm::scale(modelMatrix, glm::vec3(2.5f));
-        } else if (i == 2) { // House
-            modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 1.5f, 0.0f));
-            modelMatrix = glm::scale(modelMatrix, glm::vec3(3.0f));
-        } else if (i == 3) { // Teddy
-            modelMatrix = glm::translate(modelMatrix, glm::vec3(-4.0f, 2.15f, 4.0f));
-            modelMatrix = glm::scale(modelMatrix, glm::vec3(0.6f));
-            modelMatrix = glm::rotate(modelMatrix, glm::radians(60.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        }else if (i == 4) { // Truck
-            modelMatrix = glm::translate(modelMatrix, glm::vec3(4.0f, 1.5f, 4.0f));
-            modelMatrix = glm::scale(modelMatrix, glm::vec3(0.3f));
-            modelMatrix = glm::rotate(modelMatrix, glm::radians(120.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        }else if (i == 5) { // Spotlight1
-            modelMatrix = glm::translate(modelMatrix, glm::vec3(-4.0f, 8.0f, 4.0f));
-            modelMatrix = glm::scale(modelMatrix, glm::vec3(0.2f));
-            modelMatrix = glm::rotate(modelMatrix, glm::radians(180.0f), glm::vec3(1.0f, .0f, 0.0f));
-        }else if (i == 6) { // Spotlight2
-            modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 8.0f, -5.0f));
-            modelMatrix = glm::scale(modelMatrix, glm::vec3(0.2f));
-            modelMatrix = glm::rotate(modelMatrix, glm::radians(180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-        }else if (i == 7) { // Spotlight3
-            modelMatrix = glm::translate(modelMatrix, glm::vec3(4.0f, 8.0f, 4.0f));
-            modelMatrix = glm::scale(modelMatrix, glm::vec3(0.2f));
-            modelMatrix = glm::rotate(modelMatrix, glm::radians(180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-        }else if (i == 8) { // g_light
-            modelMatrix = glm::translate(modelMatrix, glm::vec3(3.5f, 5.5f, 0.0f));
-            modelMatrix = glm::scale(modelMatrix, glm::vec3(0.2f));
-            modelMatrix = glm::rotate(modelMatrix, glm::radians(180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-        }else if (i == 9) { // Rocket
-            modelMatrix = glm::translate(modelMatrix, glm::vec3(-0.5f, 1.5f, -5.0f));
-            modelMatrix = glm::scale(modelMatrix, glm::vec3(0.8f));
-            modelMatrix = glm::rotate(modelMatrix, glm::radians(30.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        }
-        
-        GLint modelLoc = glGetUniformLocation(g_shadingProg, "mxModel");
-        if (modelLoc != -1) {
-            glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(modelMatrix));
-        }
-    }
+//    for (size_t i = 0; i < models.size(); ++i) {
+//        glm::mat4 modelMatrix = modelMatrices[i];
+//        if (i == 1) { // Elephant_Toy
+//            modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 2.8f, 0.0f));
+//            modelMatrix = glm::rotate(modelMatrix, glm::radians(45.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+//            modelMatrix = glm::scale(modelMatrix, glm::vec3(2.5f));
+//        } else if (i == 2) { // House
+//            modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 1.5f, 0.0f));
+//            modelMatrix = glm::scale(modelMatrix, glm::vec3(3.0f));
+//        } else if (i == 3) { // Teddy
+//            modelMatrix = glm::translate(modelMatrix, glm::vec3(-4.0f, 2.15f, 4.0f));
+//            modelMatrix = glm::scale(modelMatrix, glm::vec3(0.6f));
+//            modelMatrix = glm::rotate(modelMatrix, glm::radians(60.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+//        }else if (i == 4) { // Truck
+//            modelMatrix = glm::translate(modelMatrix, glm::vec3(4.0f, 1.5f, 4.0f));
+//            modelMatrix = glm::scale(modelMatrix, glm::vec3(0.3f));
+//            modelMatrix = glm::rotate(modelMatrix, glm::radians(120.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+//        }else if (i == 5) { // Spotlight1
+//            modelMatrix = glm::translate(modelMatrix, glm::vec3(-4.0f, 8.0f, 4.0f));
+//            modelMatrix = glm::scale(modelMatrix, glm::vec3(0.2f));
+//            modelMatrix = glm::rotate(modelMatrix, glm::radians(180.0f), glm::vec3(1.0f, .0f, 0.0f));
+//        }else if (i == 6) { // Spotlight2
+//            modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 8.0f, -5.0f));
+//            modelMatrix = glm::scale(modelMatrix, glm::vec3(0.2f));
+//            modelMatrix = glm::rotate(modelMatrix, glm::radians(180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+//        }else if (i == 7) { // Spotlight3
+//            modelMatrix = glm::translate(modelMatrix, glm::vec3(4.0f, 8.0f, 4.0f));
+//            modelMatrix = glm::scale(modelMatrix, glm::vec3(0.2f));
+//            modelMatrix = glm::rotate(modelMatrix, glm::radians(180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+////        }else if (i == 8) { // g_light
+////            modelMatrix = glm::translate(modelMatrix, glm::vec3(3.5f, 5.5f, 0.0f));
+////            modelMatrix = glm::scale(modelMatrix, glm::vec3(0.2f));
+////            modelMatrix = glm::rotate(modelMatrix, glm::radians(180.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+//        }else if (i == 8) { // Rocket
+//            modelMatrix = glm::translate(modelMatrix, glm::vec3(-0.5f, 1.5f, -5.0f));
+//            modelMatrix = glm::scale(modelMatrix, glm::vec3(0.8f));
+//            modelMatrix = glm::rotate(modelMatrix, glm::radians(30.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+//        }
+//        
+//        GLint modelLoc = glGetUniformLocation(g_shadingProg, "mxModel");
+//        if (modelLoc != -1) {
+//            glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(modelMatrix));
+//        }
+//    }
 
 	CCamera::getInstance().updateView(g_eyeloc); // 設定 eye 位置
     CCamera::getInstance().updateCenter(glm::vec3(0,4,0));
@@ -299,19 +295,13 @@ void render(void)
     g_button[1].draw();
     g_button[2].draw();
     g_button[3].draw();
+    
     glUseProgram(g_shadingProg);
-
+    
     //上傳光源與相機位置
     g_light->updateToShader();
     glUniform3fv(glGetUniformLocation(g_shadingProg, "viewPos"), 1, glm::value_ptr(g_eyeloc));
     glUniform3fv(glGetUniformLocation(g_shadingProg, "lightPos"), 1, glm::value_ptr(g_light->getPos()));
-
-//    for (int i = 0; i < ROW_NUM; i++)
-//        for (int j = 0; j < ROW_NUM; j++) {
-//            g_floor[i][j].uploadMaterial();
-//            g_floor[i][j].drawRaw();
-//        }
-
 //    g_light.drawRaw();
     lightManager.updateAllLightsToShader();
         
@@ -322,13 +312,13 @@ void render(void)
     g_tknot.drawRaw();
     
     //繪製obj model
+    GLint modelLoc = glGetUniformLocation(g_shadingProg, "mxModel");
     for (size_t i = 0; i < models.size(); ++i) {
         glm::mat4 modelMatrix = modelMatrices[i];
-        
-//        if (i == 0) { // woodCube
-//            modelMatrix = glm::translate(modelMatrix, glm::vec3(-2.0f, 2.3f, 0.0f));
-//            modelMatrix = glm::scale(modelMatrix, glm::vec3(0.8f));
-//        } else
+        if (i == 0) { // woodCube
+            modelMatrix = glm::translate(modelMatrix, glm::vec3(-2.0f, 2.3f, 0.0f));
+            modelMatrix = glm::scale(modelMatrix, glm::vec3(0.8f));
+        } else
         if (i == 1) { // Elephant_Toy
             modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 2.8f, 0.0f));
             modelMatrix = glm::rotate(modelMatrix, glm::radians(45.0f), glm::vec3(0.0f, 1.0f, 0.0f));
@@ -356,17 +346,20 @@ void render(void)
             modelMatrix = glm::translate(modelMatrix, glm::vec3(4.0f, 8.0f, 4.0f));
             modelMatrix = glm::scale(modelMatrix, glm::vec3(0.2f));
             modelMatrix = glm::rotate(modelMatrix, glm::radians(180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-        }else if (i == 8) { // g_light
-            modelMatrix = glm::translate(modelMatrix, glm::vec3(3.5f, 5.5f, 0.0f));
-            modelMatrix = glm::scale(modelMatrix, glm::vec3(0.2f));
-            modelMatrix = glm::rotate(modelMatrix, glm::radians(180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-        }else if (i == 9) { // Rocket
+//        }else if (i == 8) { // g_light
+//            modelMatrix = glm::translate(modelMatrix, glm::vec3(3.5f, 5.5f, 0.0f));
+//            modelMatrix = glm::scale(modelMatrix, glm::vec3(0.2f));
+//            modelMatrix = glm::rotate(modelMatrix, glm::radians(180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+//            modelMatrix = modelMatrix * models[i]->getModelMatrix();
+//            models[8]->setFollowLight(g_light);
+            
+        }else if (i == 8) { // Rocket
             modelMatrix = glm::translate(modelMatrix, glm::vec3(-0.5f, 1.5f, -5.0f));
             modelMatrix = glm::scale(modelMatrix, glm::vec3(0.8f));
             modelMatrix = glm::rotate(modelMatrix, glm::radians(30.0f), glm::vec3(0.0f, 1.0f, 0.0f));
         }
+
         
-        GLint modelLoc = glGetUniformLocation(g_shadingProg, "mxModel");
         if (modelLoc != -1) {
             glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(modelMatrix));
         }
@@ -378,6 +371,7 @@ void render(void)
 void update(float dt)
 {
     g_light->update(dt);
+//    models[8]->update(dt);
 }
 
 void releaseAll()

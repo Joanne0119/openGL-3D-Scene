@@ -158,6 +158,8 @@ void CShape::setTransformMatrix(glm::mat4 mxMatrix)
 
 glm::mat4 CShape::getModelMatrix() { return _mxFinal; }
 GLuint CShape::getShaderProgram() { return _shaderProg; }
+glm::vec3 CShape::getScale(){ return _scale; }
+glm::vec3 CShape::getColor(){ return _color; }
 
 void CShape::reset()
 {

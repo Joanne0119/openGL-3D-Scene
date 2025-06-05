@@ -64,6 +64,7 @@ CCube::CCube() : CShape()
 	_bautoRotate = false;
 }
 
+
 void CCube::setAutoRotate()
 {
 	if( !_bautoRotate ) _bautoRotate = true;

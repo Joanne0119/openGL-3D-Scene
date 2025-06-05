@@ -66,6 +66,9 @@ public:
     float getInnerCutOff() const;
     float getOuterCutOff() const;
     float getExponent() const;
+    bool isMotionOn() const;
+    float getClock() const;
+    glm::vec3 getStartPos() const;
 
 private:
     std::string _lightname;

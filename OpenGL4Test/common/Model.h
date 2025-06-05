@@ -6,7 +6,14 @@
 #include <string>
 #include <unordered_map>
 #include <memory>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <iostream>
 
+#include "../models/CShape.h"
+#include "CLight.h"
 // 需要包含 tiny_obj_loader.h
 //#define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
@@ -62,7 +69,7 @@ struct Mesh {
 };
 
 // 主要的模型類別
-class Model {
+class Model : public CShape {
 private:
     std::vector<Mesh> meshes;
     std::vector<Material> materials;
@@ -84,6 +91,11 @@ private:
     
     // 從檔案路徑中提取目錄
     std::string GetDirectory(const std::string& filepath);
+    
+    bool  _bautoRotate = false;
+    float _clock = 0.0f;
+    glm::mat4 _modelMatrix = glm::mat4(1.0f);
+    CLight* _followLight = nullptr; 
 
 public:
     Model() = default;
@@ -109,6 +121,15 @@ public:
     
     // 檢查是否成功載入
     bool IsLoaded() const { return !meshes.empty(); }
+    void setAutoRotate();
+    void update(float dt);
+    void setRotate(float angle, const glm::vec3& axis) {
+        _modelMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(angle), axis);
+        std::cout << "Setting rotation: " << angle << " degrees" << std::endl;
+    }
+    glm::mat4 getModelMatrix() const { return _modelMatrix; }
+    
+    void setFollowLight(CLight* light) { _followLight = light; }
 };
 
 #endif // MODEL_H

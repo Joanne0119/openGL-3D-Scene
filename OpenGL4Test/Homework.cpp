@@ -64,7 +64,7 @@ CollisionManager g_collisionManager;
 CTorusKnot g_tknot(4);
 CSphere g_sphere;
 
-glm::vec3 g_eyeloc(6.0f, 6.0f, 6.0f); // 鏡頭位置, 預設在 (8,8,8)
+glm::vec3 g_eyeloc(5.0f, 5.0f, 5.0f); // 鏡頭位置, 預設在 (8,8,8)
 CCube g_centerloc; // view center預設在 (0,0,0)，不做任何描繪操作
 CQuad g_floor[ROW_NUM][ROW_NUM]; 
 
@@ -310,6 +310,8 @@ void render(void)
     
     g_tknot.uploadMaterial();
     g_tknot.drawRaw();
+    
+    g_centerloc.drawRaw();
     
     //繪製obj model
     GLint modelLoc = glGetUniformLocation(g_shadingProg, "mxModel");

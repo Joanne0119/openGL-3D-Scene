@@ -85,7 +85,8 @@ void updateCameraPosition(const glm::vec3& movement) {
     
     g_eyeloc = newEye;
     g_centerloc.setPos(newCenter);
-    
+    std::cout << "After move: Eye(" << g_eyeloc.x << ", " << g_eyeloc.y << ", " << g_eyeloc.z << ") Center(" << g_centerloc.getPos().x << ", " << g_centerloc.getPos().y << ", " << g_centerloc.getPos().z << ")" << std::endl;
+
     CCamera::getInstance().updateViewCenter(g_eyeloc, g_centerloc.getPos());
     
     glm::mat4 mxView = CCamera::getInstance().getViewMatrix();
@@ -173,23 +174,43 @@ void cursorPosCallback(GLFWwindow* window, double xpos, double ypos) {
     int width, height;
     glfwGetWindowSize(window, &width, &height);
     g_arcball.onCursorMove(xpos, ypos, width, height);
-    // Arcball* arcball = static_cast<Arcball*>(glfwGetWindowUserPointer(window));
-    //std::cout << "x = " << xpos << "y = " << ypos << std::endl;
-    if ( g_bCamRoting )
-    {
+    
+    if (g_bCamRoting) {
         if (g_bfirstMouse) {
-            g_lastX = (float)xpos; g_lastY = (float)ypos; g_bfirstMouse = false;
+            g_lastX = (float)xpos;
+            g_lastY = (float)ypos;
+            g_bfirstMouse = false;
             return;
         }
+        
         float deltaX = ((float)xpos - g_lastX);
         float deltaY = ((float)ypos - g_lastY);
-        g_lastX = (float)xpos; g_lastY = (float)ypos;
+        g_lastX = (float)xpos;
+        g_lastY = (float)ypos;
 
         CCamera::getInstance().processMouseMovement(deltaX, deltaY, g_mouseSens);
+        g_eyeloc = CCamera::getInstance().getViewLocation();
+        
+        const float LOOK_DISTANCE = 3.0f;
+        
+        glm::vec3 forward = getCameraForward();
+        glm::vec3 newCenter = g_eyeloc + forward * LOOK_DISTANCE;
+        
+        glm::vec3 safeCenterMovement = g_collisionManager.getSafeMovement(
+            newCenter - g_centerloc.getPos(), g_centerloc.getPos());
+        
+        g_centerloc.setPos(g_centerloc.getPos() + safeCenterMovement);
+        
+        CCamera::getInstance().updateViewCenter(g_eyeloc, g_centerloc.getPos());
+        
+        std::cout << "After rotation: Eye(" << g_eyeloc.x << ", " << g_eyeloc.y
+                  << ", " << g_eyeloc.z << ") Center(" << g_centerloc.getPos().x
+                  << ", " << g_centerloc.getPos().y << ", " << g_centerloc.getPos().z
+                  << ")" << std::endl;
+        
         glm::mat4 mxView = CCamera::getInstance().getViewMatrix();
         GLint viewLoc = glGetUniformLocation(g_shadingProg, "mxView");
         glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(mxView));
-        g_eyeloc = CCamera::getInstance().getViewLocation();
     }
 }
 // ---------------------------------------------------------------------------------------
@@ -210,19 +231,6 @@ void scrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
     //std::cout << "Scroll event: xoffset = " << xoffset << ", yoffset = " << yoffset << std::endl;
 }
 
-// key : GLFW_KEY_0�B GLFW_KEY_a�BGLFW_KEY_ESCAPE�BGLFW_KEY_SPACE
-// action :
-//          GLFW_PRESS�G����Q���U�C
-//          GLFW_RELEASE�G����Q����C
-//          GLFW_REPEAT�G����Q����Ĳ�o�]�����ɷ|Ĳ�o�h���^
-// mods :
-//          GLFW_MOD_SHIFT�GShift ��Q���U�C
-//          GLFW_MOD_CONTROL�GCtrl ��Q���U�C
-//          GLFW_MOD_ALT�GAlt ��Q���U�C
-//          GLFW_MOD_SUPER�GWindows ��� Command ��Q���U�C
-//          GLFW_MOD_CAPS_LOCK�GCaps Lock ��Q�ҥΡC
-//          GLFW_MOD_NUM_LOCK�GNum Lock ��Q�ҥΡC
-//
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
     glm::vec3 vPos;
     glm::mat4 mxView, mxProj;

@@ -14,7 +14,7 @@
 // ✓ (2分) 2D介面所對應的四個功能都有作用，一個功能0.5分
 // 介面的類別封裝部分沒有特別的需求
 // ✓ (2分) 正中間的主燈光必須使用到 PerPixel Lighting
-// (2分) 不會穿牆
+// ✓ (2分) 不會穿牆
 // ✓ (1分) 至少有一個光源搭配鍵盤的 R G B 提供顏色的改變
 // (5%) 創意分數，自由發揮非上述功能
 // ✓ //加貼圖
@@ -124,7 +124,7 @@ CLight* spotLight2 = new CLight(
     1.0f, 0.09f, 0.032f                  // attenuation
 );
 CLight* spotLight3 = new CLight(
-    glm::vec3(4.0f, 10.0f, 4.0f),        // position
+    glm::vec3(4.0f, 10.0f, 0.0f),        // position
     glm::vec3(4.0f, 0.0f, 4.0f),        // target
     12.5f, 17.5f, 2.0f,                 // inner/outer cutoff, exponent
     glm::vec4(0.1f, 0.0f, 0.0f, 1.0f),  // ambient
@@ -152,13 +152,14 @@ std::vector<std::string> modelPaths = {
     "models/Elephant_Toy.obj",
     "models/Elephant_Toy.obj",
     "models/House.obj",
-    "models/Teddy.obj",
     "models/Truck.obj",
     "models/Light.obj",
     "models/Light.obj",
     "models/Light.obj",
 //    "models/Light.obj",
-    "models/Rocket.obj"
+    "models/Rocket.obj",
+    "models/Bear.obj",
+    "models/Teddy.obj",
     
 };
 void genMaterial();
@@ -328,23 +329,19 @@ void render(void)
         } else if (i == 2) { // House
             modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 1.5f, 0.0f));
             modelMatrix = glm::scale(modelMatrix, glm::vec3(3.0f));
-        } else if (i == 3) { // Teddy
-            modelMatrix = glm::translate(modelMatrix, glm::vec3(-4.0f, 2.15f, 4.0f));
-            modelMatrix = glm::scale(modelMatrix, glm::vec3(0.6f));
-            modelMatrix = glm::rotate(modelMatrix, glm::radians(60.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        }else if (i == 4) { // Truck
-            modelMatrix = glm::translate(modelMatrix, glm::vec3(4.0f, 1.5f, 4.0f));
-            modelMatrix = glm::scale(modelMatrix, glm::vec3(0.3f));
-            modelMatrix = glm::rotate(modelMatrix, glm::radians(120.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        }else if (i == 5) { // Spotlight1
+        }else if (i == 3) { // Truck
+            modelMatrix = glm::translate(modelMatrix, glm::vec3(4.0f, 1.5f, 2.2f));
+            modelMatrix = glm::scale(modelMatrix, glm::vec3(0.2f));
+            modelMatrix = glm::rotate(modelMatrix, glm::radians(225.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        }else if (i == 4) { // Spotlight1
             modelMatrix = glm::translate(modelMatrix, glm::vec3(-4.0f, 8.0f, 4.0f));
             modelMatrix = glm::scale(modelMatrix, glm::vec3(0.2f));
             modelMatrix = glm::rotate(modelMatrix, glm::radians(180.0f), glm::vec3(1.0f, .0f, 0.0f));
-        }else if (i == 6) { // Spotlight2
+        }else if (i == 5) { // Spotlight2
             modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 8.0f, -5.0f));
             modelMatrix = glm::scale(modelMatrix, glm::vec3(0.2f));
             modelMatrix = glm::rotate(modelMatrix, glm::radians(180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-        }else if (i == 7) { // Spotlight3
+        }else if (i == 6) { // Spotlight3
             modelMatrix = glm::translate(modelMatrix, glm::vec3(4.0f, 8.0f, 4.0f));
             modelMatrix = glm::scale(modelMatrix, glm::vec3(0.2f));
             modelMatrix = glm::rotate(modelMatrix, glm::radians(180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
@@ -355,12 +352,19 @@ void render(void)
 //            modelMatrix = modelMatrix * models[i]->getModelMatrix();
 //            models[8]->setFollowLight(g_light);
             
-        }else if (i == 8) { // Rocket
+        }else if (i == 7) { // Rocket
             modelMatrix = glm::translate(modelMatrix, glm::vec3(-0.5f, 1.5f, -5.0f));
             modelMatrix = glm::scale(modelMatrix, glm::vec3(0.8f));
             modelMatrix = glm::rotate(modelMatrix, glm::radians(30.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        } else if (i == 8) { // Bear
+            modelMatrix = glm::translate(modelMatrix, glm::vec3(4.0f, 1.5f, 4.2f));
+            modelMatrix = glm::scale(modelMatrix, glm::vec3(0.3f));
+            modelMatrix = glm::rotate(modelMatrix, glm::radians(220.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        } else if (i == 9) { // Teddy
+            modelMatrix = glm::translate(modelMatrix, glm::vec3(-4.0f, 2.15f, 4.0f));
+            modelMatrix = glm::scale(modelMatrix, glm::vec3(0.6f));
+            modelMatrix = glm::rotate(modelMatrix, glm::radians(60.0f), glm::vec3(0.0f, 1.0f, 0.0f));
         }
-
         
         if (modelLoc != -1) {
             glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(modelMatrix));

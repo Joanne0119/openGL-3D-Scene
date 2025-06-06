@@ -51,6 +51,11 @@ struct Material {
     bool hasSpecularTexture;
 };
 uniform Material uMaterial;
+
+uniform float uNormalStrength = 2.0;
+uniform float uSpecularStrength = 3.0;
+uniform float uSpecularPower = 1.5;
+
 out vec4 FragColor;
 
 void main() {
@@ -64,9 +69,22 @@ void main() {
 //    vec3 N = normalize(TBN * (2.0 * normalMap - 1.0));
     vec3 N;
     if (uMaterial.hasNormalTexture) {
-        mat3 TBN = mat3(normalize(vTangent), normalize(vBitangent), normalize(vNormal));
+        vec3 T = normalize(vTangent);
+        vec3 B = normalize(vBitangent);
+        vec3 vertexNormal = normalize(vNormal);
+        
+        T = normalize(T - dot(T, vertexNormal) * vertexNormal);
+        B = normalize(cross(vertexNormal, T));
+        
+        mat3 TBN = mat3(T, B, vertexNormal);
+        
         vec3 normalMap = texture(uMaterial.normalTexture, vTexCoord).rgb;
-        N = normalize(TBN * (2.0 * normalMap - 1.0));
+        normalMap = normalize(normalMap * 2.0 - 1.0);
+        
+        normalMap.xy *= uNormalStrength;
+        normalMap = normalize(normalMap);
+        
+        N = normalize(TBN * normalMap);
     } else {
         N = normalize(vNormal);
     }
@@ -86,6 +104,7 @@ void main() {
 
     if(uMaterial.hasSpecularTexture) {
         texSpecular = texture(uMaterial.specularTexture, vTexCoord);
+        texSpecular.rgb = pow(texSpecular.rgb, vec3(0.8));
     }
     
     vec4 finalColor = vec4(0.0);
@@ -127,9 +146,9 @@ void main() {
         
         vec3 H = normalize(L + V);
         
-        // first ambient
+        // first Ambient
         if (i == 0) {
-            totalAmbient += uLights[i].ambient * uMaterial.ambient * texDiffuse * attenuation;
+            totalAmbient += uLights[i].ambient * uMaterial.ambient * texDiffuse * attenuation * 1.0;
         }
         
         // Diffuse
@@ -137,11 +156,17 @@ void main() {
         totalDiffuse += uLights[i].diffuse * diff * uMaterial.diffuse * texDiffuse * attenuation;
         
         // Specular
-        float spec = pow(max(dot(N, H), 0.0), uMaterial.shininess);
-        totalSpecular += uLights[i].specular * spec * uMaterial.specular * texSpecular * attenuation;
+        float spec = pow(max(dot(N, H), 0.0), uMaterial.shininess * uSpecularPower);
+        vec4 specularColor = uLights[i].specular * spec * uMaterial.specular * texSpecular * uSpecularStrength;
+        float fresnel = pow(1.0 - max(dot(N, V), 0.0), 2.0);
+        specularColor *= (1.0 + fresnel * 0.5);
+        totalSpecular += specularColor * attenuation;
     }
     
     finalColor = totalAmbient + totalDiffuse + totalSpecular;
+    
+//    finalColor.rgb = finalColor.rgb / (finalColor.rgb + vec3(1.0));
+//    finalColor.rgb = pow(finalColor.rgb, vec3(1.0/2.2)); // Gamma correction
     finalColor = clamp(finalColor, 0.0, 1.0);
     finalColor.w = 1.0;
     FragColor = finalColor;

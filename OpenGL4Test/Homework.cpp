@@ -164,6 +164,7 @@ std::vector<std::string> modelPaths = {
 };
 void genMaterial();
 void renderModel(const std::string& modelName, const glm::mat4& modelMatrix);
+void adjustShaderEffects(float normalStrength, float specularStrength, float specularPower);
 
 //----------------------------------------------------------------------------
 void loadScene(void)
@@ -171,6 +172,8 @@ void loadScene(void)
     genMaterial();
     g_shadingProg = CShaderPool::getInstance().getShader("v_phong.glsl", "f_phong.glsl");
     g_uiShader = CShaderPool::getInstance().getShader("ui_vtxshader.glsl", "ui_fragshader.glsl");
+    
+    adjustShaderEffects(3.0f, 4.0f, 2.0f);
     
     lightManager.addLight(g_light);
     lightManager.addLight(pointLight1);
@@ -207,50 +210,6 @@ void loadScene(void)
             std::cout << "Failed to load: " << path << std::endl;
         }
     }
-//    for (size_t i = 0; i < models.size(); ++i) {
-//        glm::mat4 modelMatrix = modelMatrices[i];
-//        if (i == 1) { // Elephant_Toy
-//            modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 2.8f, 0.0f));
-//            modelMatrix = glm::rotate(modelMatrix, glm::radians(45.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-//            modelMatrix = glm::scale(modelMatrix, glm::vec3(2.5f));
-//        } else if (i == 2) { // House
-//            modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 1.5f, 0.0f));
-//            modelMatrix = glm::scale(modelMatrix, glm::vec3(3.0f));
-//        } else if (i == 3) { // Teddy
-//            modelMatrix = glm::translate(modelMatrix, glm::vec3(-4.0f, 2.15f, 4.0f));
-//            modelMatrix = glm::scale(modelMatrix, glm::vec3(0.6f));
-//            modelMatrix = glm::rotate(modelMatrix, glm::radians(60.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-//        }else if (i == 4) { // Truck
-//            modelMatrix = glm::translate(modelMatrix, glm::vec3(4.0f, 1.5f, 4.0f));
-//            modelMatrix = glm::scale(modelMatrix, glm::vec3(0.3f));
-//            modelMatrix = glm::rotate(modelMatrix, glm::radians(120.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-//        }else if (i == 5) { // Spotlight1
-//            modelMatrix = glm::translate(modelMatrix, glm::vec3(-4.0f, 8.0f, 4.0f));
-//            modelMatrix = glm::scale(modelMatrix, glm::vec3(0.2f));
-//            modelMatrix = glm::rotate(modelMatrix, glm::radians(180.0f), glm::vec3(1.0f, .0f, 0.0f));
-//        }else if (i == 6) { // Spotlight2
-//            modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 8.0f, -5.0f));
-//            modelMatrix = glm::scale(modelMatrix, glm::vec3(0.2f));
-//            modelMatrix = glm::rotate(modelMatrix, glm::radians(180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-//        }else if (i == 7) { // Spotlight3
-//            modelMatrix = glm::translate(modelMatrix, glm::vec3(4.0f, 8.0f, 4.0f));
-//            modelMatrix = glm::scale(modelMatrix, glm::vec3(0.2f));
-//            modelMatrix = glm::rotate(modelMatrix, glm::radians(180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-////        }else if (i == 8) { // g_light
-////            modelMatrix = glm::translate(modelMatrix, glm::vec3(3.5f, 5.5f, 0.0f));
-////            modelMatrix = glm::scale(modelMatrix, glm::vec3(0.2f));
-////            modelMatrix = glm::rotate(modelMatrix, glm::radians(180.0f), glm::vec3(1.0f, 1.0f, 1.0f));
-//        }else if (i == 8) { // Rocket
-//            modelMatrix = glm::translate(modelMatrix, glm::vec3(-0.5f, 1.5f, -5.0f));
-//            modelMatrix = glm::scale(modelMatrix, glm::vec3(0.8f));
-//            modelMatrix = glm::rotate(modelMatrix, glm::radians(30.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-//        }
-//        
-//        GLint modelLoc = glGetUniformLocation(g_shadingProg, "mxModel");
-//        if (modelLoc != -1) {
-//            glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(modelMatrix));
-//        }
-//    }
 
 	CCamera::getInstance().updateView(g_eyeloc); // 設定 eye 位置
     CCamera::getInstance().updateCenter(glm::vec3(0,4,0));
@@ -487,4 +446,23 @@ void genMaterial()
     g_matWoodBleached.setDiffuse(glm::vec4(0.880f, 0.860f, 0.820f, 1.0f));
     g_matWoodBleached.setSpecular(glm::vec4(0.30f, 0.30f, 0.30f, 1.0f));
     g_matWoodBleached.setShininess(24.0f);
+}
+
+void adjustShaderEffects(float normalStrength, float specularStrength, float specularPower) {
+    glUseProgram(g_shadingProg);
+    
+    GLint normalStrengthLoc = glGetUniformLocation(g_shadingProg, "uNormalStrength");
+    if (normalStrengthLoc != -1) {
+        glUniform1f(normalStrengthLoc, normalStrength);
+    }
+    
+    GLint specularStrengthLoc = glGetUniformLocation(g_shadingProg, "uSpecularStrength");
+    if (specularStrengthLoc != -1) {
+        glUniform1f(specularStrengthLoc, specularStrength);
+    }
+    
+    GLint specularPowerLoc = glGetUniformLocation(g_shadingProg, "uSpecularPower");
+    if (specularPowerLoc != -1) {
+        glUniform1f(specularPowerLoc, specularPower);
+    }
 }

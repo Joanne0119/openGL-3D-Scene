@@ -78,6 +78,13 @@ void Model::ProcessMaterials(const std::vector<tinyobj::material_t>& objMaterial
         }
         mat.shininess = objMat.shininess;
         
+        // 處理透明度
+        mat.alpha = objMat.dissolve;  // TinyObjLoader 中的 dissolve 就是透明度
+        if (mat.alpha <= 0.0f) mat.alpha = 1.0f;  // 預設為不透明
+        
+        std::cout << "Material: " << mat.name << ", Alpha: " << mat.alpha << std::endl;
+        
+        
         // 載入紋理
         if (!objMat.diffuse_texname.empty()) {
             mat.diffuseTexPath = directory + "/" + objMat.diffuse_texname;
@@ -326,7 +333,9 @@ GLuint Model::LoadTexture(const std::string& path) {
 void Model::Render(GLuint shaderProgram) {
     // 確保 shader 程式是當前使用的
     glUseProgram(shaderProgram);
-    
+    // 如果有透明物體，需要啟用混合
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     for (size_t i = 0; i < meshes.size(); i++) {
         const Mesh& mesh = meshes[i];
@@ -340,11 +349,15 @@ void Model::Render(GLuint shaderProgram) {
         glBindTexture(GL_TEXTURE_2D, 0);
         glActiveTexture(GL_TEXTURE2);
         glBindTexture(GL_TEXTURE_2D, 0);
+        glActiveTexture(GL_TEXTURE3);  // 透明度貼圖
+        glBindTexture(GL_TEXTURE_2D, 0);
+
 
         // 設置預設值 (如果沒有材質)
         glUniform1i(glGetUniformLocation(shaderProgram, "uMaterial.hasDiffuseTexture"), 0);
         glUniform1i(glGetUniformLocation(shaderProgram, "uMaterial.hasNormalTexture"), 0);
         glUniform1i(glGetUniformLocation(shaderProgram, "uMaterial.hasSpecularTexture"), 0);
+        glUniform1f(glGetUniformLocation(shaderProgram, "uMaterial.alpha"), 1.0f);
 
         // 綁定材質
         if (mesh.materialIndex >= 0 && mesh.materialIndex < materials.size()) {
@@ -357,30 +370,26 @@ void Model::Render(GLuint shaderProgram) {
             GLint diffuseLoc = glGetUniformLocation(shaderProgram, "uMaterial.diffuse");
             GLint specularLoc = glGetUniformLocation(shaderProgram, "uMaterial.specular");
             GLint shininessLoc = glGetUniformLocation(shaderProgram, "uMaterial.shininess");
+            GLint alphaLoc = glGetUniformLocation(shaderProgram, "uMaterial.alpha");
 
             if (ambientLoc != -1) {
                 glUniform4f(ambientLoc, material.ambient[0], material.ambient[1], material.ambient[2], 1.0f);
-            } else {
-                std::cerr << "    uMaterial.ambient uniform not found!" << std::endl;
             }
-
             if (diffuseLoc != -1) {
                 glUniform4f(diffuseLoc, material.diffuse[0], material.diffuse[1], material.diffuse[2], 1.0f);
-            } else {
-                std::cerr << "    uMaterial.diffuse uniform not found!" << std::endl;
             }
 
             if (specularLoc != -1) {
                 glUniform4f(specularLoc, material.specular[0], material.specular[1], material.specular[2], 1.0f);
-            } else {
-                std::cerr << "    uMaterial.specular uniform not found!" << std::endl;
             }
 
             if (shininessLoc != -1) {
                 glUniform1f(shininessLoc, material.shininess);
-            } else {
-                std::cerr << "    uMaterial.shininess uniform not found!" << std::endl;
             }
+            if (alphaLoc != -1) {
+                glUniform1f(alphaLoc, material.alpha);  // 設定材質透明度
+            }
+
 
             // 綁定漫反射紋理
             if (material.diffuseTexture != 0) {
@@ -414,6 +423,14 @@ void Model::Render(GLuint shaderProgram) {
                 glUniform1i(glGetUniformLocation(shaderProgram, "uMaterial.hasSpecularTexture"), 0);
                 std::cout << "    No specular texture" << std::endl;
             }
+            // 綁定透明度貼圖
+            if (material.alphaTexture != 0) {
+                glActiveTexture(GL_TEXTURE3);
+                glBindTexture(GL_TEXTURE_2D, material.alphaTexture);
+                glUniform1i(glGetUniformLocation(shaderProgram, "uMaterial.alphaTexture"), 3);
+                glUniform1i(glGetUniformLocation(shaderProgram, "uMaterial.hasAlphaTexture"), 1);
+                std::cout << "    Using alpha texture" << std::endl;
+            }
 
         } else {
             std::cout << "  Mesh has no material assigned" << std::endl;
@@ -432,12 +449,10 @@ void Model::Render(GLuint shaderProgram) {
     }
 
     // 清理紋理綁定
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, 0);
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, 0);
-    glActiveTexture(GL_TEXTURE2);
-    glBindTexture(GL_TEXTURE_2D, 0);
+    for (int i = 0; i < 4; i++) {
+        glActiveTexture(GL_TEXTURE0 + i);
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
 }
 
 void Model::Cleanup() {
@@ -451,6 +466,7 @@ void Model::Cleanup() {
         if (material.diffuseTexture != 0) glDeleteTextures(1, &material.diffuseTexture);
         if (material.normalTexture != 0) glDeleteTextures(1, &material.normalTexture);
         if (material.specularTexture != 0) glDeleteTextures(1, &material.specularTexture);
+        if (material.alphaTexture != 0) glDeleteTextures(1, &material.alphaTexture);
     }
     
     meshes.clear();

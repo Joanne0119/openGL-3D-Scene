@@ -41,16 +41,19 @@ struct Material {
     float diffuse[3];
     float specular[3];
     float shininess;
+    float alpha;
     
     GLuint diffuseTexture;
     GLuint normalTexture;
     GLuint specularTexture;
+    GLuint alphaTexture;
     
     std::string diffuseTexPath;
     std::string normalTexPath;
     std::string specularTexPath;
+    std::string alphaTexPath;
     
-    Material() : shininess(32.0f), diffuseTexture(0), normalTexture(0), specularTexture(0) {
+    Material() : shininess(32.0f), alpha(1.0f), diffuseTexture(0), normalTexture(0), specularTexture(0), alphaTexture(0) {
         ambient[0] = ambient[1] = ambient[2] = 0.2f;
         diffuse[0] = diffuse[1] = diffuse[2] = 0.8f;
         specular[0] = specular[1] = specular[2] = 1.0f;

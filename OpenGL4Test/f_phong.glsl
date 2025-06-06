@@ -41,14 +41,17 @@ struct Material {
     vec4 diffuse;   // kd
     vec4 specular;  // ks
     float shininess;
+    float alpha;
     
     sampler2D diffuseTexture;
     sampler2D normalTexture;
     sampler2D specularTexture;
+    sampler2D alphaTexture;
     
     bool hasDiffuseTexture;
     bool hasNormalTexture;
     bool hasSpecularTexture;
+    bool hasAlphaTexture;
 };
 uniform Material uMaterial;
 
@@ -96,11 +99,21 @@ void main() {
 
     vec4 texDiffuse = vec4(1.0);
     vec4 texSpecular = vec4(1.0);
+    float finalAlpha = uMaterial.alpha;
 
     if(uMaterial.hasDiffuseTexture) {
         texDiffuse = texture(uMaterial.diffuseTexture, vTexCoord);
-        if(texDiffuse.a < 0.01) texDiffuse = vec4(1.0);
+        finalAlpha *= texDiffuse.a;
     }
+    
+    if(uMaterial.hasAlphaTexture) {
+        float alphaFromTexture = texture(uMaterial.alphaTexture, vTexCoord).r;
+        finalAlpha *= alphaFromTexture;
+    }
+    
+    if(finalAlpha < 0.01) {
+       discard;
+   }
 
     if(uMaterial.hasSpecularTexture) {
         texSpecular = texture(uMaterial.specularTexture, vTexCoord);
@@ -168,7 +181,7 @@ void main() {
 //    finalColor.rgb = finalColor.rgb / (finalColor.rgb + vec3(1.0));
 //    finalColor.rgb = pow(finalColor.rgb, vec3(1.0/2.2)); // Gamma correction
     finalColor = clamp(finalColor, 0.0, 1.0);
-    finalColor.w = 1.0;
+    finalColor.a = finalAlpha; 
     FragColor = finalColor;
     
 }

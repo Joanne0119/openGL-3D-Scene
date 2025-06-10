@@ -1,6 +1,6 @@
 // ✓ (2分)滑鼠可以控制鏡頭的方向
-// ✓ (3分)上下左右四個鍵可以控制前進與後退(以下二選一)
-//    (3分) 鏡頭方向
+//  (3分)上下左右四個鍵可以控制前進與後退(以下二選一)
+// ✓  (3分) 鏡頭方向
 //    (1分) 世界座標方向
 // (3分) 依照需求完成房間的東西放置
 // ✓ 房間正中間必須放置一個模型(必須是讀自 Obj 檔)
@@ -17,7 +17,8 @@
 // ✓ (2分) 不會穿牆
 // ✓ (1分) 至少有一個光源搭配鍵盤的 R G B 提供顏色的改變
 // (5%) 創意分數，自由發揮非上述功能
-// ✓ //加貼圖
+// ✓ //加color、normal貼圖
+// ✓ //車會移動
 
 //#define GLM_ENABLE_EXPERIMENTAL 1
 
@@ -289,9 +290,11 @@ void render(void)
             modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 1.5f, 0.0f));
             modelMatrix = glm::scale(modelMatrix, glm::vec3(3.0f));
         }else if (i == 3) { // Truck
-            modelMatrix = glm::translate(modelMatrix, glm::vec3(4.0f, 1.5f, 2.2f));
-            modelMatrix = glm::scale(modelMatrix, glm::vec3(0.2f));
+            modelMatrix = glm::translate(modelMatrix, glm::vec3(4.0f, 1.5f, -2.2f));
+            modelMatrix = glm::scale(modelMatrix, glm::vec3(0.1f));
             modelMatrix = glm::rotate(modelMatrix, glm::radians(225.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+            modelMatrix = modelMatrix * models[i]->getModelMatrix();
+            models[3]->setAutoRotate();
         }else if (i == 4) { // Spotlight1
             modelMatrix = glm::translate(modelMatrix, glm::vec3(-4.0f, 8.0f, 4.0f));
             modelMatrix = glm::scale(modelMatrix, glm::vec3(0.2f));
@@ -337,6 +340,7 @@ void update(float dt)
 {
     g_light->update(dt);
 //    models[8]->update(dt);
+    models[3]->update(dt);
 }
 
 void releaseAll()

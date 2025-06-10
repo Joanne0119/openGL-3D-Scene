@@ -78,6 +78,7 @@ private:
     std::vector<Material> materials;
     std::string directory;
     
+    
     // 載入紋理的輔助函數
     GLuint LoadTexture(const std::string& path);
     
@@ -98,7 +99,13 @@ private:
     bool  _bautoRotate = false;
     float _clock = 0.0f;
     glm::mat4 _modelMatrix = glm::mat4(1.0f);
-    CLight* _followLight = nullptr; 
+    CLight* _followLight = nullptr;
+    glm::vec3 _position = glm::vec3(0.0f);          // 當前位置
+    glm::vec3 _direction = glm::vec3(1.0f, 0.0f, 0.0f); // 初始前進方向（例如沿著 +X）
+    float _speed = 8.0f;
+    float _currentAngle = 0.0f; // 當前旋轉角度（radian）
+    float _targetAngle = 0.0f;  // 目標方向角度（radian）
+    float _rotationSpeed = glm::radians(90.0f); // 每秒旋轉速度
 
 public:
     Model() = default;

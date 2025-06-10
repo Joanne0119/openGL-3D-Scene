@@ -432,7 +432,6 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
                         case 'L':
                         case 'l':
                             g_light->setMotionEnabled();
-//                            models[8]->setAutoRotate();
                             break;
                         case 'C':
                         case 'c':

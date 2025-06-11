@@ -8,6 +8,7 @@
 //#define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
+
 Model::~Model() {
     Cleanup();
 }
@@ -500,6 +501,8 @@ void Model::setAutoRotate()
 
 void Model::update(float dt)
 {
+    updateCameraFollow();
+    
     float _boundaryLeft = -20.0f;
     float _boundaryRight = 20.0f;
     float _boundaryTop = 20.0f;
@@ -555,3 +558,91 @@ void Model::update(float dt)
        std::cout << "============================" << std::endl;
     }
 }
+void Model::setFollowCamera(bool follow, const glm::vec3& offset, bool followRotation = true, float rotationOffset = 0.0f) {
+    _followCamera = follow;
+    _cameraOffset = offset;
+    _followCameraRotation = followRotation;
+    _rotationOffset = rotationOffset;
+    
+    if (follow) {
+        std::cout << "Model now following camera with offset: ("
+                  << offset.x << ", " << offset.y << ", " << offset.z << ")";
+        if (followRotation) {
+            std::cout << " and rotation with offset: " << glm::degrees(rotationOffset) << " degrees";
+        }
+        std::cout << std::endl;
+    } else {
+        std::cout << "Model stopped following camera" << std::endl;
+    }
+}
+
+void Model::updateCameraFollow() {
+    if (!_followCamera) return;
+    
+    // 獲取攝影機位置
+    glm::vec3 cameraPos = _cameraPos;
+    
+    // 獲取攝影機的前方、右方、上方向量
+    glm::mat4 viewMatrix = _viewMatrix;
+    glm::vec3 cameraForward = -glm::vec3(viewMatrix[0][2], viewMatrix[1][2], viewMatrix[2][2]);
+    glm::vec3 cameraRight = glm::vec3(viewMatrix[0][0], viewMatrix[1][0], viewMatrix[2][0]);
+    glm::vec3 cameraUp = glm::vec3(viewMatrix[0][1], viewMatrix[1][1], viewMatrix[2][1]);
+    
+    // 計算物件應該在的位置
+    // offset.x = 右方偏移, offset.y = 上方偏移, offset.z = 前方偏移
+    glm::vec3 targetPosition = cameraPos +
+                              cameraRight * _cameraOffset.x +
+                              cameraUp * _cameraOffset.y +
+                              cameraForward * _cameraOffset.z;
+    
+    // 更新物件位置
+    _position = targetPosition;
+    
+    float targetAngle = _currentAngle;
+    
+    if (_followCameraRotation) {
+            // 方法1：根據攝影機前方向量計算 Y 軸旋轉角度
+            targetAngle = atan2(cameraForward.x, cameraForward.z) + _rotationOffset;
+            
+            // 或者使用方法2：更精確的四元數轉換
+            // glm::quat cameraRotation = glm::conjugate(glm::quat_cast(viewMatrix));
+            // glm::vec3 eulerAngles = glm::eulerAngles(cameraRotation);
+            // targetAngle = eulerAngles.y + _rotationOffset;
+        }
+    
+    // 更新模型矩陣 - 只有位移，保持原有的旋轉
+    glm::mat4 translation = glm::translate(glm::mat4(1.0f), _position);
+    glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), targetAngle, glm::vec3(0.0f, 1.0f, 0.0f));
+    _modelMatrix = translation * rotation;
+    
+    if (_followCameraRotation) {
+        _currentAngle = targetAngle;
+    }
+    
+    static int frameCount = 0;
+    frameCount++;
+    if (frameCount % 60 == 0) {
+        std::cout << "Following model - Position: (" << _position.x << ", " << _position.y << ", " << _position.z << ")";
+        if (_followCameraRotation) {
+            std::cout << ", Rotation: " << glm::degrees(targetAngle) << " degrees";
+        }
+        std::cout << std::endl;
+    }
+}
+
+void Model::setCameraPos(const glm::vec3& pos) {
+    _cameraPos = pos;
+     std::cout << "Model received camera pos: (" << pos.x << ", " << pos.y << ", " << pos.z << ")" << std::endl;
+}
+
+void Model::setViewMatrix(const glm::mat4& viewMatrix) {
+    _viewMatrix = viewMatrix;
+    // Debug 輸出 - 只打印一次避免過多輸出
+    static int debugCount = 0;
+    if (debugCount < 5) {
+        std::cout << "Model received view matrix update " << debugCount << std::endl;
+        debugCount++;
+    }
+}
+
+

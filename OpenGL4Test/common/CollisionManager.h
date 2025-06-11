@@ -71,7 +71,7 @@ private:
 public:
     CollisionManager() {
         // 設置攝影機碰撞器（半徑0.3f）
-        cameraCollider.radius = 0.3f;
+        cameraCollider.radius = 1.3f;
         initializeWalls();
     }
     
